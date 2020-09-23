@@ -3,7 +3,7 @@ package lv.sbogdano.evo.scala.bootcamp.homework.basics
 import scala.annotation.tailrec
 import scala.math.abs
 
-object Basic {
+object Basics extends App {
 
   def lcm(a: Int, b: Int): Int = abs(a * b) / gcd(a, b)
 
