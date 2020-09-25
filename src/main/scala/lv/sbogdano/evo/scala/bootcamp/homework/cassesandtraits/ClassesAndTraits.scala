@@ -57,7 +57,7 @@ object ClassesAndTraits extends App {
     override def move(dx: Double, dy: Double, dz: Double): Point = Point(x + dx, y + dy)
   }
 
-  final case class Circle(centerX: Double, centerY: Double, radius: Double) extends Shapes2D[Circle] with Movable[Circle]  {
+  final case class Circle(centerX: Double, centerY: Double, radius: Double) extends Shapes2D[Circle] with Movable[Circle] {
     override def x: Double = centerX
     override def y: Double = centerY
 
@@ -67,6 +67,7 @@ object ClassesAndTraits extends App {
     override def maxY: Double = centerY + radius
 
     override def move(dx: Double, dy: Double, dz: Double): Circle = Circle(x + dx, y + dy, radius)
+
     override def area: Double = math.Pi * radius * radius
   }
 
@@ -107,61 +108,74 @@ object ClassesAndTraits extends App {
       val s = (sideA + sideB + sideC) / 2
       math.sqrt(s * (s - sideA) * (s - sideB) * (s - sideC))
     }
-
-    final case class Sphere(centerX: Double, centerY: Double, centerZ: Double, radius: Double) extends Shapes3D[Sphere] with Movable[Sphere] {
-      override def x: Double = centerX
-      override def y: Double = centerY
-      override def z: Double = centerZ
-
-      override def minX: Double = centerX - radius
-      override def maxX: Double = centerX + radius
-      override def minY: Double = centerY - radius
-      override def maxY: Double = centerY + radius
-      override def minZ: Double = centerZ - radius
-      override def maxZ: Double = centerZ + radius
-
-      override def move(dx: Double, dy: Double, dz: Double): Sphere = Sphere(x + dx, y + dy, z + dz, radius)
-
-      override def surfaceArea: Double = 4 * math.Pi * radius * radius
-
-      override def volume: Double = (4 * math.Pi * math.pow(radius, 3)) / 3
-    }
-
-    final case class Cone(centerX: Double, centerY: Double, centerZ: Double, height: Double, radius: Double, sideLength: Double) extends Shapes3D[Sphere] with Movable[Sphere] {
-      override def x: Double = centerX
-      override def y: Double = centerY
-      override def z: Double = centerZ
-
-      override def minX: Double = centerX - radius
-      override def maxX: Double = centerX + radius
-      override def minY: Double = centerY
-      override def maxY: Double = centerY + height
-      override def minZ: Double = centerZ - radius
-      override def maxZ: Double = centerZ + radius
-
-      override def move(dx: Double, dy: Double, dz: Double): Cone = Cone(x + dx, y + dy, z + dz, height, radius, sideLength)
-
-      override def surfaceArea: Double = (math.Pi * radius * sideLength) + (math.Pi * radius * radius)
-
-      override def volume: Double = (math.Pi * radius * radius * height) / 3
-    }
-
-    final case class Cube(x: Double, y: Double, z: Double, side: Double) extends Shapes3D[Cube] with Movable[Cube] {
-      override def minX: Double = x
-      override def maxX: Double = x + side
-      override def minY: Double = y
-      override def maxY: Double = y + side
-      override def minZ: Double = z
-      override def maxZ: Double = z + side
-
-      override def move(dx: Double, dy: Double, dz: Double): Cube = Cube(x + dx, y + dy, z + dz, side)
-
-      override def surfaceArea: Double = 6 * side * side
-
-      override def volume: Double = math.pow(side, 3)
-    }
-
   }
 
+  final case class Sphere(centerX: Double, centerY: Double, centerZ: Double, radius: Double) extends Shapes3D[Sphere] with Movable[Sphere] {
+    override def x: Double = centerX
+    override def y: Double = centerY
+    override def z: Double = centerZ
+
+    override def minX: Double = centerX - radius
+    override def maxX: Double = centerX + radius
+    override def minY: Double = centerY - radius
+    override def maxY: Double = centerY + radius
+    override def minZ: Double = centerZ - radius
+    override def maxZ: Double = centerZ + radius
+
+    override def move(dx: Double, dy: Double, dz: Double): Sphere = Sphere(x + dx, y + dy, z + dz, radius)
+
+    override def surfaceArea: Double = 4 * math.Pi * radius * radius
+
+    override def volume: Double = (4 * math.Pi * math.pow(radius, 3)) / 3
+  }
+
+  final case class Cone(centerX: Double, centerY: Double, centerZ: Double, height: Double, radius: Double, sideLength: Double) extends Shapes3D[Sphere] with Movable[Sphere] {
+    override def x: Double = centerX
+    override def y: Double = centerY
+    override def z: Double = centerZ
+
+    override def minX: Double = centerX - radius
+    override def maxX: Double = centerX + radius
+    override def minY: Double = centerY
+    override def maxY: Double = centerY + height
+    override def minZ: Double = centerZ - radius
+    override def maxZ: Double = centerZ + radius
+
+    override def move(dx: Double, dy: Double, dz: Double): Cone = Cone(x + dx, y + dy, z + dz, height, radius, sideLength)
+
+    override def surfaceArea: Double = (math.Pi * radius * sideLength) + (math.Pi * radius * radius)
+
+    override def volume: Double = (math.Pi * radius * radius * height) / 3
+  }
+
+  final case class Cube(x: Double, y: Double, z: Double, side: Double) extends Shapes3D[Cube] with Movable[Cube] {
+    override def minX: Double = x
+    override def maxX: Double = x + side
+    override def minY: Double = y
+    override def maxY: Double = y + side
+    override def minZ: Double = z
+    override def maxZ: Double = z + side
+
+    override def move(dx: Double, dy: Double, dz: Double): Cube = Cube(x + dx, y + dy, z + dz, side)
+
+    override def surfaceArea: Double = 6 * side * side
+
+    override def volume: Double = math.pow(side, 3)
+  }
+
+  final case class Cuboid(x: Double, y: Double, z: Double, length: Double, height: Double, width: Double) extends Shapes3D[Cuboid] with Movable[Cuboid] {
+    override def minX: Double = x
+    override def maxX: Double = x + length
+    override def minY: Double = y
+    override def maxY: Double = y + height
+    override def minZ: Double = z
+    override def maxZ: Double = z + width
+
+    override def move(dx: Double, dy: Double, dz: Double): Cuboid = Cuboid(x + dx, y + dy, z + dz, length, height, width)
+
+    override def surfaceArea: Double = 2 * ((width * height) + (length * width) + (length * height))
+
+    override def volume: Double = length * height * width
+  }
 
 }
