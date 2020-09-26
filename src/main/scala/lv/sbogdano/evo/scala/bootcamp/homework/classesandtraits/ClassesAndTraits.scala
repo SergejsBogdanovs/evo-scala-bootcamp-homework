@@ -1,4 +1,4 @@
-package lv.sbogdano.evo.scala.bootcamp.homework.cassesandtraits
+package lv.sbogdano.evo.scala.bootcamp.homework.classesandtraits
 
 object ClassesAndTraits extends App {
 
