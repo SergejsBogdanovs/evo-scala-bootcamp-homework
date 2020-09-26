@@ -6,5 +6,5 @@ Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-home
 
 **Lesson ClassesAndTraits**
 
-Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/cassesandtraits/ClassesAndTraits.scala)
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/classesandtraits/ClassesAndTraits.scala)
 
