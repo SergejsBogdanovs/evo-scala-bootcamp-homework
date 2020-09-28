@@ -1,6 +1,6 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.adt
 
-object PokerHand extends App{
+object PokerHand extends App {
 
   // Homework. Define an algebraic data type `PokerHand`, which contains a collection of cards, representing a
   // hand in a poker game. Make sure the defined model protects against invalid data. Use value classes and
