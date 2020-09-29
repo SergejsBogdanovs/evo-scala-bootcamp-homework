@@ -96,8 +96,8 @@ object ControlStructures {
     case DivideResult(l, result)  => formatResult("divide", l, result)
     case SumResult(l, result)     => formatResult("sum", l, result)
     case AverageResult(l, result) => formatResult("average", l, result)
-    case MinResult(l, result)     => formatResult("min", l, result)
-    case MaxResult(l, result)     => formatResult("max", l, result)
+    case MinResult(l, result)     => formatResult("minimum", l, result)
+    case MaxResult(l, result)     => formatResult("maximum", l, result)
   }
 
   private def formatResult(name: String, numbers: List[Double], result: Double): String = name match {
@@ -116,20 +116,14 @@ object ControlStructures {
     // but you can also avoid using them using  pattern matching.
       //import cats.implicits._
 
-    parseCommand(x) match {
-      case Left(errorMessage) => errorMessage
-      case Right(value) => calculate(value) match {
-        case Left(errorMessage) => errorMessage
-        case Right(value) => renderResult(value)
-      }
-    }
-
     // implement using a for-comprehension
-//    for {
-//      command <- parseCommand(x)
-//      result <- calculate(command)
-//      rendered <- renderResult(result)
-//    } yield rendered
+    (for {
+      command <- parseCommand(x)
+      result <- calculate(command)
+    } yield result) match {
+      case Right(result) => renderResult(result)
+      case Left(errorMessage) => errorMessage
+    }
   }
 
   // This `main` method reads lines from stdin, passes each to `process` and outputs the return value to stdout
