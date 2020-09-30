@@ -1,9 +1,9 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.controlstructures
 
 import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructures.Command._
-import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructures.Result._
 
 import scala.io.Source
+import scala.util.Try
 
 object ControlStructures {
 
@@ -44,73 +44,100 @@ object ControlStructures {
   }
 
   sealed trait Result
-  object Result {
-    final case class DivideResult(l: List[Double], result: Double) extends Result
-    final case class SumResult(l: List[Double], result: Double) extends Result
-    final case class AverageResult(l: List[Double], result: Double) extends Result
-    final case class MinResult(l: List[Double], result: Double) extends Result
-    final case class MaxResult(l: List[Double], result: Double) extends Result
+  final case class CommandResult(command: Command, evalResult: Double) extends Result
+
+  sealed trait CommandService {
+    def split(x: String): Either[ErrorMessage, List[String]]
+    def commandName(split: List[String]): Either[ErrorMessage, String]
+    def validateCommand(command: String): Either[ErrorMessage, Unit]
+    def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]]
+    def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]]
+    def getCommand(commandName: String, numbers: List[Double]): Either[ErrorMessage, Command]
   }
 
-  private def parseCommand(x: String): Either[ErrorMessage, Command] = {
-    if (x == null || x.isEmpty) return Left("Error: Command must not be null")
+  final case class MyCommandService() extends CommandService {
 
-    val validCommands = Set("divide", "sum", "average", "min", "max")
-    val split = x.split("\\s")
-    val command = split.head
-    val numbersStr = split.tail
+    def split(x: String): Either[ErrorMessage, List[String]] = {
+      Try(x.split(" ").toList).toOption.toRight(left = "Error: The command is null or empty")
+    }
 
-    if (!numbersStr.map(_.toDoubleOption).forall(_.isDefined)) return Left("Error: Evaluation must contain only numbers")
+    def commandName(split: List[String]): Either[ErrorMessage, String] = {
+      split.headOption.toRight(left = "Error: Can not get command")
+    }
 
-    val numbers = numbersStr.map(_.toDouble).toList
+    def validateCommand(command: String): Either[ErrorMessage, Unit] = {
+      val validCommands = Set("divide", "sum", "average", "min", "max")
+      if (validCommands.contains(command)) Right() else Left("Error: Invalid command")
+    }
 
-    if (!validCommands.contains(command)) Left("Error: Invalid command") else command match {
+    def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]] = {
+      Try(split.tail).toOption.toRight(left = "Error: Can not get numbers")
+    }
+
+    def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]] = {
+      Try(numbersStr.map(_.toDouble)).toOption.toRight(left = "Error: Evaluation must contain only numbers")
+    }
+
+    def getCommand(commandName: String, numbers: List[Double]): Either[ErrorMessage, Command] = commandName match {
       case "divide" => numbers.length match {
         case 2 => Right(Divide(numbers.head, numbers(1)))
         case _ => Left("Error: Divide operation requires 2 numbers")
       }
-      case "sum"     => Right(Sum(numbers))
+      case "sum" => Right(Sum(numbers))
       case "average" => Right(Average(numbers))
-      case "min"     => Right(Min(numbers))
-      case "max"     => Right(Max(numbers))
+      case "min" => Right(Min(numbers))
+      case "max" => Right(Max(numbers))
     }
+  }
+
+  private def parseCommand(commandService: CommandService, x: String): Either[ErrorMessage, Command] = {
+    import commandService._
+
+    for {
+      split                <- split(x)
+      commandName          <- commandName(split)
+      _                    <- validateCommand(commandName)
+      commandNumbersStr    <- commandNumbers(split)
+      commandNumbersDouble <- numbersStrToDouble(commandNumbersStr)
+      command              <- getCommand(commandName, commandNumbersDouble)
+    } yield command
   }
 
   // should return an error (using `Left` channel) in case of division by zero and other
   // invalid operations
-  private def calculate(x: Command): Either[ErrorMessage, Result] = x match {
+  private def calculate(command: Command): Either[ErrorMessage, Result] = command match {
     case Divide(_, 0) => Left("Error: division by zero")
-    case Divide(x, y) => Right(DivideResult(x::y::Nil, x / y))
+    case Divide(dividend, divisor) => Right(CommandResult(command, dividend / divisor))
 
     case Sum(Nil) => Left("Error: no numbers to evaluate sum")
-    case Sum(l)   => Right(SumResult(l, l.sum))
+    case Sum(numbers)   => Right(CommandResult(command, numbers.sum))
 
     case Average(Nil) => Left("Error: no numbers to evaluate average")
-    case Average(l)   => Right(AverageResult(l, l.sum / l.length))
+    case Average(numbers)   => Right(CommandResult(command, numbers.sum / numbers.length))
 
     case Min(Nil) => Left("Error: no numbers to evaluate min")
-    case Min(l)   => Right(MinResult(l, l.min))
+    case Min(numbers)   => Right(CommandResult(command, numbers.min))
 
     case Max(Nil) => Left("Error: no numbers to evaluate max")
-    case Max(l)   => Right(MaxResult(l, l.max))
+    case Max(numbers)   => Right(CommandResult(command, numbers.max))
   }
 
-  private def renderResult(x: Result): String = x match {
-    case DivideResult(l, result)  => formatResult("divide", l, result)
-    case SumResult(l, result)     => formatResult("sum", l, result)
-    case AverageResult(l, result) => formatResult("average", l, result)
-    case MinResult(l, result)     => formatResult("minimum", l, result)
-    case MaxResult(l, result)     => formatResult("maximum", l, result)
+  private def renderResult(result: Result): String = result match {
+    case CommandResult(command, evalResult) => command match {
+      case Divide(dividend, divisor) =>
+        val retString = "%1.0f divided by %1.0f is %1.1f"
+        retString.format(dividend, divisor, evalResult)
+      case Sum(numbers)     => formatResult(numbers, evalResult, "sum")
+      case Average(numbers) => formatResult(numbers, evalResult, "average")
+      case Min(numbers)     => formatResult(numbers, evalResult, "minimum")
+      case Max(numbers)     => formatResult(numbers, evalResult, "maximum")
+    }
   }
 
-  private def formatResult(name: String, numbers: List[Double], result: Double): String = name match {
-    case "divide" =>
-      val retString = "%1.0f divided by %1.0f is %1.1f"
-      retString.format(numbers.head, numbers(1), result)
-    case _ =>
-      val retString = "the %s of %s is %1.1f"
-      val s = numbers.mkString(" ")
-      retString.format(name, s, result)
+   private def formatResult(numbers: List[Double], evalResult: Double, commandName: String): String = {
+    val retString = "the %s of %s is %1.1f"
+    val s = numbers.mkString(" ")
+    retString.format(commandName, s, evalResult)
   }
 
   private def process(x: String): String = {
@@ -121,7 +148,7 @@ object ControlStructures {
 
     // implement using a for-comprehension
     (for {
-      command <- parseCommand(x)
+      command <- parseCommand(MyCommandService(), x)
       result <- calculate(command)
     } yield result) match {
       case Right(result) => renderResult(result)
