@@ -1,6 +1,7 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.controlstructures
 
 import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructures.Command._
+import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructures.Result._
 
 import scala.io.Source
 
@@ -43,11 +44,13 @@ object ControlStructures {
   }
 
   sealed trait Result
-  case class DivideResult(l: List[Double], result: Double) extends Result
-  case class SumResult(l: List[Double], result: Double) extends Result
-  case class AverageResult(l: List[Double], result: Double) extends Result
-  case class MinResult(l: List[Double], result: Double) extends Result
-  case class MaxResult(l: List[Double], result: Double) extends Result
+  object Result {
+    final case class DivideResult(l: List[Double], result: Double) extends Result
+    final case class SumResult(l: List[Double], result: Double) extends Result
+    final case class AverageResult(l: List[Double], result: Double) extends Result
+    final case class MinResult(l: List[Double], result: Double) extends Result
+    final case class MaxResult(l: List[Double], result: Double) extends Result
+  }
 
   private def parseCommand(x: String): Either[ErrorMessage, Command] = {
     if (x == null || x.isEmpty) return Left("Error: Command must not be null")
