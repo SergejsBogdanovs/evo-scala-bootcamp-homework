@@ -150,10 +150,7 @@ object ControlStructures {
     (for {
       command <- parseCommand(MyCommandService(), x)
       result <- calculate(command)
-    } yield result) match {
-      case Right(result) => renderResult(result)
-      case Left(errorMessage) => errorMessage
-    }
+    } yield result) fold (left => s"$left", right => renderResult(right))
   }
 
   // This `main` method reads lines from stdin, passes each to `process` and outputs the return value to stdout
