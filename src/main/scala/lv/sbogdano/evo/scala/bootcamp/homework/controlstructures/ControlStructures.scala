@@ -5,6 +5,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructur
 import scala.io.Source
 import scala.util.Try
 
+
 object ControlStructures {
 
   // Homework
@@ -49,33 +50,37 @@ object ControlStructures {
   sealed trait CommandService {
     def split(x: String): Either[ErrorMessage, List[String]]
     def commandName(split: List[String]): Either[ErrorMessage, String]
-    def validateCommand(command: String): Either[ErrorMessage, Unit]
+    def validateCommandName(command: String): Either[ErrorMessage, Unit]
     def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]]
     def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]]
     def getCommand(commandName: String, numbers: List[Double]): Either[ErrorMessage, Command]
   }
 
-  final case class MyCommandService() extends CommandService {
+  final class MyCommandService extends CommandService {
+
+    import cats.implicits._
 
     def split(x: String): Either[ErrorMessage, List[String]] = {
-      Try(x.split(" ").toList).toOption.toRight(left = "Error: The command is null or empty")
+      //Try(x.split(" ").toList).toOption.toRight(left = "Error: The command is null or empty")
+      //Try(x.split(" ").toList).toEither.left.map(l => s"Error: ${l.getMessage}")
+      Try(x.split(" ").toList).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
     def commandName(split: List[String]): Either[ErrorMessage, String] = {
-      split.headOption.toRight(left = "Error: Can not get command")
+      Try(split.head).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
-    def validateCommand(command: String): Either[ErrorMessage, Unit] = {
+    def validateCommandName(command: String): Either[ErrorMessage, Unit] = {
       val validCommands = Set("divide", "sum", "average", "min", "max")
       if (validCommands.contains(command)) Right() else Left("Error: Invalid command")
     }
 
     def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]] = {
-      Try(split.tail).toOption.toRight(left = "Error: Can not get numbers")
+      Try(split.tail).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
     def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]] = {
-      Try(numbersStr.map(_.toDouble)).toOption.toRight(left = "Error: Evaluation must contain only numbers")
+      Try(numbersStr.map(_.toDouble)).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
     def getCommand(commandName: String, numbers: List[Double]): Either[ErrorMessage, Command] = commandName match {
@@ -96,7 +101,7 @@ object ControlStructures {
     for {
       split                <- split(x)
       commandName          <- commandName(split)
-      _                    <- validateCommand(commandName)
+      _                    <- validateCommandName(commandName)
       commandNumbersStr    <- commandNumbers(split)
       commandNumbersDouble <- numbersStrToDouble(commandNumbersStr)
       command              <- getCommand(commandName, commandNumbersDouble)
@@ -148,7 +153,7 @@ object ControlStructures {
 
     // implement using a for-comprehension
     (for {
-      command <- parseCommand(MyCommandService(), x)
+      command <- parseCommand(new MyCommandService, x)
       result <- calculate(command)
     } yield result) fold (left => s"$left", right => renderResult(right))
   }
