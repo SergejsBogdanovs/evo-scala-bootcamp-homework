@@ -49,10 +49,10 @@ object ControlStructures {
 
   sealed trait CommandService {
     def split(x: String): Either[ErrorMessage, List[String]]
-    def commandName(split: List[String]): Either[ErrorMessage, String]
+    def getCommandName(split: List[String]): Either[ErrorMessage, String]
     def validateCommandName(command: String): Either[ErrorMessage, Unit]
-    def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]]
-    def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]]
+    def getCommandNumbers(split: List[String]): Either[ErrorMessage, List[String]]
+    def getNumbersAsDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]]
     def getCommand(commandName: String, numbers: List[Double]): Either[ErrorMessage, Command]
   }
 
@@ -66,7 +66,7 @@ object ControlStructures {
       Try(x.split(" ").toList).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
-    def commandName(split: List[String]): Either[ErrorMessage, String] = {
+    def getCommandName(split: List[String]): Either[ErrorMessage, String] = {
       Try(split.head).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
@@ -75,11 +75,11 @@ object ControlStructures {
       if (validCommands.contains(command)) Right() else Left("Error: Invalid command")
     }
 
-    def commandNumbers(split: List[String]): Either[ErrorMessage, List[String]] = {
+    def getCommandNumbers(split: List[String]): Either[ErrorMessage, List[String]] = {
       Try(split.tail).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
-    def numbersStrToDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]] = {
+    def getNumbersAsDouble(numbersStr: List[String]): Either[ErrorMessage, List[Double]] = {
       Try(numbersStr.map(_.toDouble)).toEither.leftMap(l => s"Error: ${l.getMessage}")
     }
 
@@ -100,10 +100,10 @@ object ControlStructures {
 
     for {
       split                <- split(x)
-      commandName          <- commandName(split)
+      commandName          <- getCommandName(split)
       _                    <- validateCommandName(commandName)
-      commandNumbersStr    <- commandNumbers(split)
-      commandNumbersDouble <- numbersStrToDouble(commandNumbersStr)
+      commandNumbersStr    <- getCommandNumbers(split)
+      commandNumbersDouble <- getNumbersAsDouble(commandNumbersStr)
       command              <- getCommand(commandName, commandNumbersDouble)
     } yield command
   }
