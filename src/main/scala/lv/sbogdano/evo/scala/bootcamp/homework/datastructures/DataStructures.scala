@@ -19,6 +19,7 @@ object DataStructures {
   // Input `Map("a" -> 1, "b" -> 2, "c" -> 4, "d" -> 1, "e" -> 0, "f" -> 2, "g" -> 2)` should result in
   // output `List(Set("e") -> 0, Set("a", "d") -> 1, Set("b", "f", "g") -> 2, Set("c") -> 4)`.
 
+  // version 1
   def sortConsideringEqualValues[T](map: Map[T, Int]): List[(Set[T], Int)] = {
     map.groupBy(_._2)
       .map { case (x, xs) => (x, xs.keySet) }
@@ -26,4 +27,14 @@ object DataStructures {
       .toList
       .sortBy(_._2)
   }
+
+  // version 2
+  def sortConsideringEqualValues1[T](map: Map[T, Int]): List[(Set[T], Int)] = {
+    map.groupBy({ case (_, v) => v })
+      .map { case (k, v) => (k, v.keySet) }
+      .map(_.swap)
+      .toList
+      .sortBy({ case (_, i) => i })
+  }
+
 }
