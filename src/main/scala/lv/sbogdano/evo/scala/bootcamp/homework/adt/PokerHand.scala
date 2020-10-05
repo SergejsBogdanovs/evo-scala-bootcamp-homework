@@ -19,79 +19,55 @@ object PokerHand extends App {
   // appropriate. Place the solution under `adt` package in your homework repository.
   type Error = String
 
-  val validRanks = Set("A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2")
-  val validSuites = Set("h", "d", "c", "s")
-
-  val validateCount = (cards: List[Card], pokerHand: PokerHand) => cards match {
-    case cards if cards.length == 5 => Right(pokerHand)
-    case _ => Left("Invalid card count")
+  sealed trait PokerHand {
+    val cards: List[Card]
   }
 
-  trait PokerHand
+  case object PokerHand {
+    case class HigherCard(cards: List[Card]) extends PokerHand
+    case class Pair(cards: List[Card]) extends PokerHand
+    case class TwoPair(cards: List[Card]) extends PokerHand
+    case class ThreeOfAKind(cards: List[Card]) extends PokerHand
+    case class Straight(cards: List[Card]) extends PokerHand
+    case class Flush(cards: List[Card]) extends PokerHand
+    case class FullHouse(cards: List[Card]) extends PokerHand
+    case class FourOfAKind(cards: List[Card]) extends PokerHand
+    case class StraightFlush(cards: List[Card]) extends PokerHand
 
-  trait Card {
-    val rank: Either[Error, Rank]
-    val suite: Either[Error, Suite]
+    def from(cards: List[Card]): Either[Error, PokerHand] = cards match {
+      case Nil | cards  if cards.length != 5 => Left("Error: Cards count must be 5")
+      case _ => ??? // Calculate Poker combination and return it ex. Right(Pair(cards))
+    }
   }
 
-  final case class Rank(rank: String) extends AnyVal
+  sealed trait Rank {
+    def character: Char
+    def strength: Int
+  }
   object Rank {
-    def apply(rank: String): Either[Error, Rank] = rank match {
-      case rank if validRanks contains rank => Right(new Rank(rank))
-      case _ => Left("Invalid rank")
-    }
+    case object A extends Rank {val character = 'A'; val strength = 14}
+    case object K extends Rank {val character = 'K'; val strength = 13}
+    case object Q extends Rank {val character = 'Q'; val strength = 12}
+    case object J extends Rank {val character = 'J'; val strength = 11}
+    case object T extends Rank {val character = 'T'; val strength = 10}
+    case object Nine extends Rank {val character = '9'; val strength = 9}
+    case object Eight extends Rank {val character = '8'; val strength = 8}
+    case object Seven extends Rank {val character = '7'; val strength = 7}
+    case object Six extends Rank {val character = '6'; val strength = 6}
+    case object Five extends Rank {val character = '5'; val strength = 5}
+    case object Four extends Rank {val character = '4'; val strength = 4}
+    case object Three extends Rank {val character = '3'; val strength = 3}
+    case object Two extends Rank {val character = '2'; val strength = 2}
   }
 
-  final case class Suite(suite: String) extends AnyVal
+  sealed trait Suite
   object Suite {
-    def apply(suite: String): Either[Error, Suite] = suite match {
-      case suite if validSuites contains suite => Right(new Suite(suite))
-      case _ => Left("Invalid suite")
-    }
+    case object H extends Suite
+    case object D extends Suite
+    case object C extends Suite
+    case object S extends Suite
   }
 
-  final case class HigherCard(cards: List[Card]) extends PokerHand
-  object HigherCard {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new HigherCard(cards))
-  }
+  case class Card(rank: Rank, suite: Suite)
 
-  final case class Pair(cards: List[Card]) extends PokerHand
-  object Pair {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new Pair(cards))
-  }
-
-  final case class TwoPairs(cards: List[Card]) extends PokerHand
-  object TwoPairs {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new TwoPairs(cards))
-  }
-
-  final case class ThreeOfAKind(cards: List[Card]) extends PokerHand
-  object ThreeOfAKind {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new ThreeOfAKind(cards))
-  }
-
-  final case class Straight(cards: List[Card]) extends PokerHand
-  object Straight {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new Straight(cards))
-  }
-
-  final case class Flush(cards: List[Card]) extends PokerHand
-  object Flush {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new Flush(cards))
-  }
-
-  final case class FullHouse(cards: List[Card]) extends PokerHand
-  object FullHouse {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new FullHouse(cards))
-  }
-
-  final case class FourOfAKind(cards: List[Card]) extends PokerHand
-  object FourOfAKind {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new FourOfAKind(cards))
-  }
-
-  final case class StraightFlush(cards: List[Card]) extends PokerHand
-  object StraightFlush {
-    def apply(cards: List[Card]): Either[Error, PokerHand] = validateCount(cards, new StraightFlush(cards))
-  }
 }
