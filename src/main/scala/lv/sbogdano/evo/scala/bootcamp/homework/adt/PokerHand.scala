@@ -19,55 +19,64 @@ object PokerHand extends App {
   // appropriate. Place the solution under `adt` package in your homework repository.
   type Error = String
 
+  sealed trait Hand
+  object Hand {
+    case object TexasHoldem extends Hand
+    case object OmahaHoldem extends Hand
+  }
+
   sealed trait PokerHand {
     val cards: List[Card]
   }
-
-  case object PokerHand {
-    case class HigherCard(cards: List[Card]) extends PokerHand
-    case class Pair(cards: List[Card]) extends PokerHand
-    case class TwoPair(cards: List[Card]) extends PokerHand
-    case class ThreeOfAKind(cards: List[Card]) extends PokerHand
-    case class Straight(cards: List[Card]) extends PokerHand
-    case class Flush(cards: List[Card]) extends PokerHand
-    case class FullHouse(cards: List[Card]) extends PokerHand
-    case class FourOfAKind(cards: List[Card]) extends PokerHand
-    case class StraightFlush(cards: List[Card]) extends PokerHand
+  object PokerHand {
+    case class HigherCard private(cards: List[Card]) extends PokerHand
+    case class Pair private(cards: List[Card]) extends PokerHand
+    case class TwoPair private(cards: List[Card]) extends PokerHand
+    case class ThreeOfAKind private(cards: List[Card]) extends PokerHand
+    case class Straight private(cards: List[Card]) extends PokerHand
+    case class Flush private(cards: List[Card]) extends PokerHand
+    case class FullHouse private(cards: List[Card]) extends PokerHand
+    case class FourOfAKind private(cards: List[Card]) extends PokerHand
+    case class StraightFlush private(cards: List[Card]) extends PokerHand
 
     def from(cards: List[Card]): Either[Error, PokerHand] = cards match {
-      case Nil | cards  if cards.length != 5 => Left("Error: Cards count must be 5")
+      case Nil => Left("Error: Cards count must be 5")
+      case cards if cards.length != 5 => Left("Error: Cards count must be 5")
       case _ => ??? // Calculate Poker combination and return it ex. Right(Pair(cards))
     }
   }
 
   sealed trait Rank {
-    def character: Char
+    def character: String
     def strength: Int
   }
   object Rank {
-    case object A extends Rank {val character = 'A'; val strength = 14}
-    case object K extends Rank {val character = 'K'; val strength = 13}
-    case object Q extends Rank {val character = 'Q'; val strength = 12}
-    case object J extends Rank {val character = 'J'; val strength = 11}
-    case object T extends Rank {val character = 'T'; val strength = 10}
-    case object Nine extends Rank {val character = '9'; val strength = 9}
-    case object Eight extends Rank {val character = '8'; val strength = 8}
-    case object Seven extends Rank {val character = '7'; val strength = 7}
-    case object Six extends Rank {val character = '6'; val strength = 6}
-    case object Five extends Rank {val character = '5'; val strength = 5}
-    case object Four extends Rank {val character = '4'; val strength = 4}
-    case object Three extends Rank {val character = '3'; val strength = 3}
-    case object Two extends Rank {val character = '2'; val strength = 2}
+    case object A extends Rank {val character = "A"; val strength = 14}
+    case object K extends Rank {val character = "K"; val strength = 13}
+    case object Q extends Rank {val character = "Q"; val strength = 12}
+    case object J extends Rank {val character = "J"; val strength = 11}
+    case object T extends Rank {val character = "T"; val strength = 10}
+    case object Nine extends Rank {val character = "9"; val strength = 9}
+    case object Eight extends Rank {val character = "8"; val strength = 8}
+    case object Seven extends Rank {val character = "7"; val strength = 7}
+    case object Six extends Rank {val character = "6"; val strength = 6}
+    case object Five extends Rank {val character = "5"; val strength = 5}
+    case object Four extends Rank {val character = "4"; val strength = 4}
+    case object Three extends Rank {val character = "3"; val strength = 3}
+    case object Two extends Rank {val character = "2"; val strength = 2}
   }
 
-  sealed trait Suite
+  sealed trait Suite {
+    def character: String
+  }
   object Suite {
-    case object H extends Suite
-    case object D extends Suite
-    case object C extends Suite
-    case object S extends Suite
+    case object H extends Suite {val character = "h"}
+    case object D extends Suite {val character = "d"}
+    case object C extends Suite {val character = "c"}
+    case object S extends Suite {val character = "s"}
   }
 
   case class Card(rank: Rank, suite: Suite)
 
+  val cards = List(Card(Rank.K, Suite.D)).map(c => c.rank.strength -> c.suite.character).toMap
 }
