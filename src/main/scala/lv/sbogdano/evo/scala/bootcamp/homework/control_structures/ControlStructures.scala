@@ -1,6 +1,6 @@
-package lv.sbogdano.evo.scala.bootcamp.homework.controlstructures
+package lv.sbogdano.evo.scala.bootcamp.homework.control_structures
 
-import lv.sbogdano.evo.scala.bootcamp.homework.controlstructures.ControlStructures.Command._
+import lv.sbogdano.evo.scala.bootcamp.homework.control_structures.ControlStructures.Command._
 
 import scala.io.Source
 import scala.util.Try

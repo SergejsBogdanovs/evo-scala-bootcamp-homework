@@ -1,4 +1,4 @@
-package lv.sbogdano.evo.scala.bootcamp.homework.datastructures
+package lv.sbogdano.evo.scala.bootcamp.homework.data_structures
 
 object DataStructures {
   // Homework
