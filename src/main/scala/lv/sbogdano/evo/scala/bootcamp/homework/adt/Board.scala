@@ -1,16 +1,16 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.adt
 
 import cats.implicits.catsSyntaxEitherId
-import lv.sbogdano.evo.scala.bootcamp.homework.adt.Holdem.ErrorMessage
 
-case class Board private(input: String) extends AnyVal
+case class Board private(boardCards: List[Card])
 object Board {
-  def from(input: List[String]): Either[ErrorMessage, Board] = input match {
-    case Nil                              => ErrorMessage(s"Invalid input $input").asLeft
-    case board :: _ if board.length != 10 => ErrorMessage(s"Board cards count for input $input must be 10").asLeft
-    case board :: _                       => Board(board).asRight
+  def from(boardCards: List[Card]): Either[ErrorMessage, Board] = boardCards match {
+    case Nil                                  => ErrorMessage(s"Invalid input $boardCards").asLeft
+    case boardCards if boardCards.length != 5 => ErrorMessage(s"Board cards count must be 5").asLeft
+    case _                                    => Board(boardCards).asRight
   }
 }
+
 
 
     
