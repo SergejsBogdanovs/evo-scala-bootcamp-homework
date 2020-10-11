@@ -1,5 +1,6 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 
@@ -53,15 +54,24 @@ object ImplicitsHomework {
      */
     final class MutableBoundedCache[K: GetSizeScore, V: GetSizeScore](maxSizeScore: SizeScore) {
       //with this you can use .sizeScore syntax on keys and values
+      import syntax._
 
       /*
       mutable.LinkedHashMap is a mutable map container which preserves insertion order - this might be useful!
        */
       private val map = mutable.LinkedHashMap.empty[K, V]
 
-      def put(key: K, value: V): Unit = ???
+      @tailrec
+      def put(key: K, value: V): Unit = {
+        if ((key.sizeScore + value.sizeScore) > maxSizeScore) {
+          map -= map.head._1
+          put(key, value)
+        } else {
+          map.put(key, value)
+        }
+      }
 
-      def get(key: K): Option[V] = ???
+      def get(key: K): Option[V] = map.get(key)
     }
 
     /**
@@ -106,6 +116,11 @@ object ImplicitsHomework {
         override def iterator2[T, S](f: Map[T, S]): Iterator[S] = f.values.iterator
       }
 
+      implicit val packedMultiMapIterate: Iterate2[PackedMultiMap] = new Iterate2[PackedMultiMap] {
+        override def iterator1[T, S](f: PackedMultiMap[T, S]): Iterator[T] = f.inner.map { case (t, _) => t }.iterator
+        override def iterator2[T, S](f: PackedMultiMap[T, S]): Iterator[S] = f.inner.map { case (_, s) => s }.iterator
+      }
+
       /*
       replace this big guy with proper implicit instances for types:
       - Byte, Char, Int, Long
@@ -135,7 +150,6 @@ object ImplicitsHomework {
       implicit def mapSizeScore[K: GetSizeScore, V: GetSizeScore]: GetSizeScore[Map[K, V]] = (value: Map[K, V]) => {
         value.foldLeft(12)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
       }
-
     }
   }
 
