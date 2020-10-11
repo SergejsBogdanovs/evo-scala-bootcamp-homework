@@ -1,5 +1,8 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses
 
+import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomework.MyTwitter.TwitCache.twitGetSizeScore
+import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomework.SuperVipCollections4s.syntax.GetSizeScoreOps
+
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
@@ -63,9 +66,14 @@ object ImplicitsHomework {
 
       @tailrec
       def put(key: K, value: V): Unit = {
-        if ((key.sizeScore + value.sizeScore) > maxSizeScore) {
-          map -= map.head._1
-          put(key, value)
+
+        val mapSizeScoreSum = map.foldLeft(0)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
+
+        if (mapSizeScoreSum + key.sizeScore + value.sizeScore > maxSizeScore) {
+          if (map.nonEmpty) {
+            map -= map.head._1
+            put(key, value)
+          }
         } else {
           map.put(key, value)
         }
@@ -159,6 +167,7 @@ object ImplicitsHomework {
    */
   object MyTwitter {
     import SuperVipCollections4s._
+    import instances._
 
     final case class Twit(
                            id: Long,
@@ -179,9 +188,31 @@ object ImplicitsHomework {
       def get(id: Long): Option[Twit]
     }
 
+    object TwitCache {
+
+      implicit val fbiNoteGetSizeScore: GetSizeScore[FbiNote] = (value: FbiNote) =>
+        value.month.sizeScore +
+          value.favouriteChar.sizeScore +
+          value.watchedPewDiePieTimes.sizeScore
+
+
+      implicit val twitGetSizeScore: GetSizeScore[Twit] = (value: Twit) =>
+        value.id.sizeScore +
+        value.userId.sizeScore +
+        value.hashTags.sizeScore +
+        value.attributes.sizeScore +
+        value.fbiNotes.sizeScore
+    }
+
     /*
     Return an implementation based on MutableBoundedCache[Long, Twit]
      */
-    def createTwitCache(maxSizeScore: SizeScore): TwitCache = ???
+    def createTwitCache(maxSizeScore: SizeScore): TwitCache = new TwitCache {
+      val mutableBoundedCache = new MutableBoundedCache[Long, Twit](maxSizeScore)
+
+      override def put(twit: Twit): Unit = mutableBoundedCache.put(twit.id, twit)
+
+      override def get(id: Long): Option[Twit] = mutableBoundedCache.get(id)
+    }
   }
 }
