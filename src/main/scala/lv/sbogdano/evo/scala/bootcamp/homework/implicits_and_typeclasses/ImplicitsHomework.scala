@@ -58,6 +58,8 @@ object ImplicitsHomework {
     final class MutableBoundedCache[K: GetSizeScore, V: GetSizeScore](maxSizeScore: SizeScore) {
       //with this you can use .sizeScore syntax on keys and values
       import syntax._
+      import instances._
+
 
       /*
       mutable.LinkedHashMap is a mutable map container which preserves insertion order - this might be useful!
@@ -67,9 +69,7 @@ object ImplicitsHomework {
       @tailrec
       def put(key: K, value: V): Unit = {
 
-        val mapSizeScoreSum = map.foldLeft(0)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
-
-        if (mapSizeScoreSum + key.sizeScore + value.sizeScore > maxSizeScore) {
+        if (map.sizeScore + key.sizeScore + value.sizeScore > maxSizeScore) {
           if (map.nonEmpty) {
             map -= map.head._1
             put(key, value)
@@ -157,6 +157,9 @@ object ImplicitsHomework {
       }
       implicit def mapSizeScore[K: GetSizeScore, V: GetSizeScore]: GetSizeScore[Map[K, V]] = (value: Map[K, V]) => {
         value.foldLeft(12)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
+      }
+      implicit def linkedHashMapSizeScore[K: GetSizeScore, V: GetSizeScore]: GetSizeScore[mutable.LinkedHashMap[K, V]] = (value: mutable.LinkedHashMap[K, V]) => {
+        value.foldLeft(0)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
       }
     }
   }
