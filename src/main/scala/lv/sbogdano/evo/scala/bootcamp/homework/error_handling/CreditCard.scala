@@ -23,7 +23,41 @@ object CreditCard {
 
   sealed trait ValidationError
   object ValidationError {
-    ??? // Add errors as needed
+    final case object CardHolderNameLengthIsInvalid extends ValidationError {
+      override def toString: String = "Card holder name must be between 3 and 30 characters"
+    }
+
+    final case object CardHolderNameSpecialCharacters extends ValidationError {
+      override def toString: String = "Card holder name cannot contain special characters"
+    }
+
+    final case object CreditCardNumberNotNumeric extends ValidationError {
+      override def toString: String = "Credit card number must be a number"
+    }
+
+    final case object CreditCardNumberLengthIsInvalid extends ValidationError {
+      override def toString: String = "Credit card number length must 16 characters"
+    }
+
+    final case object CreditCardExpirationDateNotNumeric extends ValidationError {
+      override def toString: String = "Credit card expiration date must be a number"
+    }
+
+    final case object CreditCardExpirationDateLengthIsInvalid extends ValidationError {
+      override def toString: String = "Credit card expiration date length must 4 characters"
+    }
+
+    final case object CreditCardExpirationDateFormatIsInvalid extends ValidationError {
+      override def toString: String = "Credit card expiration date format must be MM/YY"
+    }
+
+    final case object CreditCardSecurityCodeLengthIsInvalid extends ValidationError {
+      override def toString: String = "Credit card security code length must 3 characters"
+    }
+
+    final case object CreditCardSecurityCodeFormatNotNumeric extends ValidationError {
+      override def toString: String = "Credit card security code must be a number"
+    }
   }
 
   object CreditCardValidator {
