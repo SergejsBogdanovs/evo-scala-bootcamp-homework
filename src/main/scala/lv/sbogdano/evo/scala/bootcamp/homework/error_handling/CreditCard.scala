@@ -1,7 +1,5 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.error_handling
 
-import cats.data.ValidatedNec
-
 // Homework. Place the solution under `error_handling` package in your homework repository.
 //
 // 1. Model `CreditCard` class as an ADT (protect against invalid data as much as it makes sense).
@@ -62,13 +60,26 @@ object CreditCard {
 
   object CreditCardValidator {
 
+    import cats.data.ValidatedNec
+    import cats.syntax.all._
+
+    // ("(?:0[1-9]|1[0-2])/[0-9]{2}")
+
     type AllErrorsOr[A] = ValidatedNec[ValidationError, A]
+
+    def validateCardHolderName(name: String): AllErrorsOr[String] = ???
+    def validateCreditCardNumber(number: String): AllErrorsOr[Long] = ???
+    def validateCreditCardExpirationDate(expirationDate: String): AllErrorsOr[Int] = ???
+    def validateCreditCardSecurityCode(securityCode: String): AllErrorsOr[Int] = ???
 
     def validate(
                   name: String,
                   number: String,
                   expirationDate: String,
                   securityCode: String,
-                ): AllErrorsOr[CreditCard] = ???
+                ): AllErrorsOr[CreditCard] = {
+
+      ???
+    }
   }
 }
