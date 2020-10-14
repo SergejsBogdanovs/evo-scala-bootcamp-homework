@@ -1,10 +1,10 @@
-package lv.sbogdano.evo.scala.bootcamp.homework
+package lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses
 
-import lv.sbogdano.evo.scala.bootcamp.homework.ImplicitsHomeworkSpec.TestValue
-import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomework.SuperVipCollections4s.{GetSizeScore, MutableBoundedCache, PackedMultiMap, SizeScore}
 import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomework.SuperVipCollections4s.syntax.GetSizeScoreOps
-import org.scalatest.matchers.should.Matchers
+import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomework.SuperVipCollections4s.{GetSizeScore, MutableBoundedCache, PackedMultiMap, SizeScore}
+import lv.sbogdano.evo.scala.bootcamp.homework.implicits_and_typeclasses.ImplicitsHomeworkSpec.TestValue
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class ImplicitsHomeworkSpec extends AnyFreeSpec with Matchers {
 
