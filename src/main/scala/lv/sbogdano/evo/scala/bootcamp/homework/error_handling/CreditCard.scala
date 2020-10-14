@@ -8,9 +8,9 @@ package lv.sbogdano.evo.scala.bootcamp.homework.error_handling
 object CreditCard {
 
   final case class CreditCardHolderName(name: String) extends AnyVal
-  final case class CreditCardNumber(number: String) extends AnyVal
+  final case class CreditCardNumber(number: Long) extends AnyVal
   final case class CreditCardExpirationDate(expirationDate: String) extends AnyVal
-  final case class CreditCardSecurityCode(securityCode: String) extends AnyVal
+  final case class CreditCardSecurityCode(securityCode: Int) extends AnyVal
 
   case class CreditCard(
                        name: CreditCardHolderName,
@@ -19,42 +19,36 @@ object CreditCard {
                        securityCode: CreditCardSecurityCode
                        )
 
-  sealed trait ValidationError
+  sealed trait ValidationError {
+    def errorMessage: String
+  }
   object ValidationError {
     final case object CardHolderNameLengthIsInvalid extends ValidationError {
-      override def toString: String = "Card holder name must be between 3 and 30 characters"
+      def errorMessage: String = "Card holder name must be between 3 and 30 characters"
     }
 
     final case object CardHolderNameSpecialCharacters extends ValidationError {
-      override def toString: String = "Card holder name cannot contain special characters"
+      def errorMessage: String = "Card holder name cannot contain special characters"
     }
 
     final case object CreditCardNumberNotNumeric extends ValidationError {
-      override def toString: String = "Credit card number must be a number"
+      def errorMessage: String = "Credit card number must be a number"
     }
 
     final case object CreditCardNumberLengthIsInvalid extends ValidationError {
-      override def toString: String = "Credit card number length must 16 characters"
-    }
-
-    final case object CreditCardExpirationDateNotNumeric extends ValidationError {
-      override def toString: String = "Credit card expiration date must be a number"
-    }
-
-    final case object CreditCardExpirationDateLengthIsInvalid extends ValidationError {
-      override def toString: String = "Credit card expiration date length must 4 characters"
+      def errorMessage: String = "Credit card number length must 16 characters"
     }
 
     final case object CreditCardExpirationDateFormatIsInvalid extends ValidationError {
-      override def toString: String = "Credit card expiration date format must be MM/YY"
+      def errorMessage: String = "Credit card expiration date format must be MM/YY"
     }
 
     final case object CreditCardSecurityCodeLengthIsInvalid extends ValidationError {
-      override def toString: String = "Credit card security code length must 3 characters"
+      def errorMessage: String = "Credit card security code length must 3 characters"
     }
 
     final case object CreditCardSecurityCodeFormatNotNumeric extends ValidationError {
-      override def toString: String = "Credit card security code must be a number"
+      def errorMessage: String = "Credit card security code must be a number"
     }
   }
 
@@ -62,15 +56,60 @@ object CreditCard {
 
     import cats.data.ValidatedNec
     import cats.syntax.all._
+    import ValidationError._
 
     // ("(?:0[1-9]|1[0-2])/[0-9]{2}")
 
     type AllErrorsOr[A] = ValidatedNec[ValidationError, A]
 
-    def validateCardHolderName(name: String): AllErrorsOr[String] = ???
-    def validateCreditCardNumber(number: String): AllErrorsOr[Long] = ???
-    def validateCreditCardExpirationDate(expirationDate: String): AllErrorsOr[Int] = ???
-    def validateCreditCardSecurityCode(securityCode: String): AllErrorsOr[Int] = ???
+    private def validateCardHolderName(name: String): AllErrorsOr[CreditCardHolderName] = {
+
+      def validateCardHolderNameLength: AllErrorsOr[CreditCardHolderName] = {
+        if (name.length >= 3 && name.length <= 30) CreditCardHolderName(name).validNec
+        else CardHolderNameLengthIsInvalid.invalidNec
+      }
+
+      def validateCardHolderNameContent: AllErrorsOr[CreditCardHolderName] = {
+        if (name.matches("^[a-zA-Z]+$")) CreditCardHolderName(name).validNec
+        else CardHolderNameSpecialCharacters.invalidNec
+      }
+
+      validateCardHolderNameLength *> validateCardHolderNameContent
+    }
+
+    private def validateCreditCardNumber(number: String): AllErrorsOr[CreditCardNumber] = {
+
+      def validateCreditCardNumberContent: AllErrorsOr[CreditCardNumber] = {
+        if (number.forall(_.isDigit)) CreditCardNumber(number.toLong).validNec
+        else CreditCardNumberNotNumeric.invalidNec
+      }
+
+      def validateCreditCardNumberLength(number: CreditCardNumber): AllErrorsOr[CreditCardNumber] = {
+        if (number.toString.length == 16) number.validNec
+        else CreditCardNumberLengthIsInvalid.invalidNec
+      }
+
+      validateCreditCardNumberContent andThen validateCreditCardNumberLength
+    }
+
+    private def validateCreditCardExpirationDate(expirationDate: String): AllErrorsOr[CreditCardExpirationDate] = {
+
+      if (expirationDate.matches("(?:0[1-9]|1[0-2])/[0-9]{2}")) CreditCardExpirationDate(expirationDate).validNec
+      else CreditCardExpirationDateFormatIsInvalid.invalidNec
+    }
+
+    private def validateCreditCardSecurityCode(securityCode: String): AllErrorsOr[CreditCardSecurityCode] = {
+
+      def validateCreditCardSecurityCodeContent: AllErrorsOr[CreditCardSecurityCode] =
+        if (securityCode.forall(_.isDigit)) CreditCardSecurityCode(securityCode.toInt).validNec
+        else CreditCardSecurityCodeFormatNotNumeric.invalidNec
+
+      def validateCreditCardSecurityCodeLength(securityCode: CreditCardSecurityCode): AllErrorsOr[CreditCardSecurityCode] =
+        if (securityCode.toString.length == 3) securityCode.validNec
+        else CreditCardSecurityCodeLengthIsInvalid.invalidNec
+
+      validateCreditCardSecurityCodeContent andThen validateCreditCardSecurityCodeLength
+    }
 
     def validate(
                   name: String,
