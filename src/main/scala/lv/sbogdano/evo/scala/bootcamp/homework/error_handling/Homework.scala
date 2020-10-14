@@ -26,27 +26,21 @@ object Homework {
     final case object CardHolderNameLengthIsInvalid extends ValidationError {
       def errorMessage: String = "Card holder name must be between 3 and 30 characters"
     }
-
     final case object CardHolderNameSpecialCharacters extends ValidationError {
       def errorMessage: String = "Card holder name cannot contain special characters"
     }
-
     final case object CreditCardNumberNotNumeric extends ValidationError {
       def errorMessage: String = "Credit card number must be a number"
     }
-
     final case object CreditCardNumberLengthIsInvalid extends ValidationError {
       def errorMessage: String = "Credit card number length must 16 characters"
     }
-
     final case object CreditCardExpirationDateFormatIsInvalid extends ValidationError {
       def errorMessage: String = "Credit card expiration date format must be MM/YY"
     }
-
     final case object CreditCardSecurityCodeLengthIsInvalid extends ValidationError {
       def errorMessage: String = "Credit card security code length must 3 characters"
     }
-
     final case object CreditCardSecurityCodeFormatNotNumeric extends ValidationError {
       def errorMessage: String = "Credit card security code must be a number"
     }
@@ -57,8 +51,6 @@ object Homework {
     import cats.data.ValidatedNec
     import cats.syntax.all._
     import ValidationError._
-
-    // ("(?:0[1-9]|1[0-2])/[0-9]{2}")
 
     type AllErrorsOr[A] = ValidatedNec[ValidationError, A]
 
@@ -93,7 +85,6 @@ object Homework {
     }
 
     private def validateCreditCardExpirationDate(expirationDate: String): AllErrorsOr[CreditCardExpirationDate] = {
-
       if (expirationDate.matches("(?:0[1-9]|1[0-2])/[0-9]{2}")) CreditCardExpirationDate(expirationDate).validNec
       else CreditCardExpirationDateFormatIsInvalid.invalidNec
     }
