@@ -24,3 +24,8 @@ Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-home
 
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/implicits_and_typeclasses/ImplicitsHomework.scala)
 
+**Lesson ErrorHandling**
+
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/implicits_and_typeclasses/ImplicitsHomework.scala)
+
+Tests: [Tests]()
