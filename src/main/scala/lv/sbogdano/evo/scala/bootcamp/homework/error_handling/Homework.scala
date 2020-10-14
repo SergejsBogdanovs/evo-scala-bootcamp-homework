@@ -5,7 +5,7 @@ package lv.sbogdano.evo.scala.bootcamp.homework.error_handling
 // 1. Model `CreditCard` class as an ADT (protect against invalid data as much as it makes sense).
 // 2. Add `ValidationError` cases (at least 5, may be more).
 // 3. Implement `validate` method to construct `CreditCard` instance from the supplied raw data.
-object CreditCard {
+object Homework {
 
   final case class CreditCardHolderName(name: String) extends AnyVal
   final case class CreditCardNumber(number: Long) extends AnyVal
@@ -84,8 +84,8 @@ object CreditCard {
         else CreditCardNumberNotNumeric.invalidNec
       }
 
-      def validateCreditCardNumberLength(number: CreditCardNumber): AllErrorsOr[CreditCardNumber] = {
-        if (number.toString.length == 16) number.validNec
+      def validateCreditCardNumberLength(creditCardNumber: CreditCardNumber): AllErrorsOr[CreditCardNumber] = {
+        if (creditCardNumber.number.toString.length == 16) creditCardNumber.validNec
         else CreditCardNumberLengthIsInvalid.invalidNec
       }
 
@@ -104,8 +104,8 @@ object CreditCard {
         if (securityCode.forall(_.isDigit)) CreditCardSecurityCode(securityCode.toInt).validNec
         else CreditCardSecurityCodeFormatNotNumeric.invalidNec
 
-      def validateCreditCardSecurityCodeLength(securityCode: CreditCardSecurityCode): AllErrorsOr[CreditCardSecurityCode] =
-        if (securityCode.toString.length == 3) securityCode.validNec
+      def validateCreditCardSecurityCodeLength(creditCardSecurityCode: CreditCardSecurityCode): AllErrorsOr[CreditCardSecurityCode] =
+        if (creditCardSecurityCode.securityCode.toString.length == 3) creditCardSecurityCode.validNec
         else CreditCardSecurityCodeLengthIsInvalid.invalidNec
 
       validateCreditCardSecurityCodeContent andThen validateCreditCardSecurityCodeLength
@@ -118,7 +118,12 @@ object CreditCard {
                   securityCode: String,
                 ): AllErrorsOr[CreditCard] = {
 
-      ???
+      (validateCardHolderName(name),
+        validateCreditCardNumber(number),
+        validateCreditCardExpirationDate(expirationDate),
+        validateCreditCardSecurityCode(securityCode)
+      ).mapN(CreditCard)
+
     }
   }
 }
