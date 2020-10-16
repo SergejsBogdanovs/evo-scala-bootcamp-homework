@@ -29,3 +29,8 @@ Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-home
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/error_handling/Homework.scala)
 
 Tests: [Tests](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/test/scala/lv/sbogdano/evo/scala/bootcamp/homework/error_handling/HomeworkSpec.scala)
+
+**Lesson Processing JSON**
+
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/test/scala/lv/sbogdano/evo/scala/bootcamp/homework/json/JsonHomeworkSpec.scala)
+
