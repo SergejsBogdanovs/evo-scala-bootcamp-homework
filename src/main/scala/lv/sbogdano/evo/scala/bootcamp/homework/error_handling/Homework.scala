@@ -71,17 +71,17 @@ object Homework {
 
     private def validateCreditCardNumber(number: String): AllErrorsOr[CreditCardNumber] = {
 
-      def validateCreditCardNumberContent: AllErrorsOr[CreditCardNumber] = {
-        if (number.forall(_.isDigit)) CreditCardNumber(number.toLong).validNec
+      def validateCreditCardNumberContent: AllErrorsOr[Long] = {
+        if (number.forall(_.isDigit)) number.toLong.validNec
         else CreditCardNumberNotNumeric.invalidNec
       }
 
-      def validateCreditCardNumberLength(creditCardNumber: CreditCardNumber): AllErrorsOr[CreditCardNumber] = {
-        if (creditCardNumber.number.toString.length == 16) creditCardNumber.validNec
+      def validateCreditCardNumberLength(creditCardNumber: Long): AllErrorsOr[Long] = {
+        if (creditCardNumber.toString.length == 16) creditCardNumber.validNec
         else CreditCardNumberLengthIsInvalid.invalidNec
       }
 
-      validateCreditCardNumberContent andThen validateCreditCardNumberLength
+      validateCreditCardNumberContent andThen validateCreditCardNumberLength map CreditCardNumber
     }
 
     private def validateCreditCardExpirationDate(expirationDate: String): AllErrorsOr[CreditCardExpirationDate] = {
@@ -91,15 +91,15 @@ object Homework {
 
     private def validateCreditCardSecurityCode(securityCode: String): AllErrorsOr[CreditCardSecurityCode] = {
 
-      def validateCreditCardSecurityCodeContent: AllErrorsOr[CreditCardSecurityCode] =
-        if (securityCode.forall(_.isDigit)) CreditCardSecurityCode(securityCode.toInt).validNec
+      def validateCreditCardSecurityCodeContent: AllErrorsOr[Int] =
+        if (securityCode.forall(_.isDigit)) securityCode.toInt.validNec
         else CreditCardSecurityCodeFormatNotNumeric.invalidNec
 
-      def validateCreditCardSecurityCodeLength(creditCardSecurityCode: CreditCardSecurityCode): AllErrorsOr[CreditCardSecurityCode] =
-        if (creditCardSecurityCode.securityCode.toString.length == 3) creditCardSecurityCode.validNec
+      def validateCreditCardSecurityCodeLength(creditCardSecurityCode: Int): AllErrorsOr[Int] =
+        if (creditCardSecurityCode.toString.length == 3) creditCardSecurityCode.validNec
         else CreditCardSecurityCodeLengthIsInvalid.invalidNec
 
-      validateCreditCardSecurityCodeContent andThen validateCreditCardSecurityCodeLength
+      validateCreditCardSecurityCodeContent andThen validateCreditCardSecurityCodeLength map CreditCardSecurityCode
     }
 
     def validate(
