@@ -60,7 +60,7 @@ object Homework {
 
     // Card holder name
     final case object CardHolderNameLengthIsInvalid extends ValidationError {
-      def errorMessage: String = "Card holder name must be between 3 and 30 characters"
+      def errorMessage: String = "Card holder name must be between 3 and 24 characters"
     }
     final case object CardHolderNameSpecialCharacters extends ValidationError {
       def errorMessage: String = "Card holder name cannot contain special characters"
