@@ -1,27 +1,28 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.error_handling
 
 import cats.implicits.{catsSyntaxValidatedId, catsSyntaxValidatedIdBinCompat0}
-import lv.sbogdano.evo.scala.bootcamp.homework.error_handling.Homework.{CreditCard, CreditCardExpirationDate, CreditCardHolderName, CreditCardNumber, CreditCardSecurityCode, CreditCardValidator, ValidationError}
+import lv.sbogdano.evo.scala.bootcamp.homework.error_handling.Homework.ValidationError.{CardHolderNameLengthIsInvalid, CardHolderNameSpecialCharacters, CreditCardExpirationDateFormatIsInvalid, CreditCardNumberLengthIsInvalid, CreditCardNumberNotNumeric, CreditCardSecurityCodeFormatNotNumeric, CreditCardSecurityCodeLengthIsInvalid}
+import lv.sbogdano.evo.scala.bootcamp.homework.error_handling.Homework.{CreditCard, CreditCardExpirationDate, CreditCardHolderName, CreditCardNumber, CreditCardSecurityCode, CreditCardValidator, Month, ValidationError, Year}
 import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class HomeworkSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks{
+class HomeworkSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   "CreditCardValidator" should "handle valid and invalid credit cards" in {
     import lv.sbogdano.evo.scala.bootcamp.homework.error_handling.Homework.ValidationError._
 
     CreditCardValidator.validate(
-      name = "creditcard",
+      name = "creditcard '`~.-",
       number = "1234123412341234",
       expirationDate = "09/12",
       securityCode = "123"
     ) shouldBe CreditCard(
-        CreditCardHolderName("creditcard"),
-        CreditCardNumber(1234123412341234L),
-        CreditCardExpirationDate("09/12"),
-        CreditCardSecurityCode(123)).validNec
+      CreditCardHolderName("creditcard '`~.-"),
+      CreditCardNumber("1234123412341234"),
+      CreditCardExpirationDate(Month.September, Year(12)),
+      CreditCardSecurityCode("123")).validNec
 
     def checkInvalid(
                     name: String,
@@ -90,7 +91,7 @@ class HomeworkSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenProper
     checkInvalid(
       name = "a",
       number = "1",
-      expirationDate = "01/2",
+      expirationDate = "01/",
       securityCode = "1232",
       errors = Set(
         CardHolderNameLengthIsInvalid,
