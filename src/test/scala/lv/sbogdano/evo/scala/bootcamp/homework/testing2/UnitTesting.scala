@@ -730,7 +730,7 @@ object Excercise12 {
 //
 // sbt:scala-bootcamp> testOnly *testing2.Excercise12Spec
 //
-class Excercise12Spec extends AsyncFunSuite with Matchers {
+class Excercise12Spec extends AsyncFunSuite {
 
   import Excercise12._
 
