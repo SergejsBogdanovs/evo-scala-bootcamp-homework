@@ -55,6 +55,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-persistence" % akkaVersion,
   "org.tpolecat" %% "doobie-core" % doobieVersion,
   "org.tpolecat" %% "doobie-h2" % doobieVersion,
+  "org.specs2" %% "specs2-core" % "4.8.0" % Test,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   "org.mockito" %% "mockito-scala" % "1.15.0" % Test,
   "org.scalaj" %% "scalaj-http" % "2.4.2" % Test,

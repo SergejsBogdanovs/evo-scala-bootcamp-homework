@@ -494,7 +494,7 @@ object Excercise10 {
 
       // NOTE: We do not have a returned type annotation and documentation here, why?
       def deleteWorst(minimumScore: Int) = {
-        val worstPlayers = repository.all.filter(p => p.score < minimumScore)
+        val worstPlayers = repository.all.filter(_.score < minimumScore)
         worstPlayers.foreach(p => repository.delete(p.id))
       }
       def celebrate(bonus: Int) = {
@@ -539,49 +539,46 @@ class Excercise10Spec extends AnyFunSuite {
 
   import Excercise10._
 
-  def fixture: Object {
-    val logging: Logging
+  def fixture =
+    new {
 
-    val repository: PlayerRepository
-  } = new {
+      val repository: PlayerRepository = new PlayerRepository {
 
-    val repository: PlayerRepository = new PlayerRepository {
+        var players: List[Player] = List(
+          Player("a", "Bill", "@bootcamp.com", 100),
+          Player("b", "John", "@bootcamp.com", 200),
+          Player("c", "Jack", "@bootcamp.com", 300)
+        )
 
-      var players: List[Player] = List(
-        Player("a", "Bill", "@bootcamp.com", 100),
-        Player("b", "John", "@bootcamp.com", 200),
-        Player("c", "Jack", "@bootcamp.com", 300)
-      )
+        override def byId(id: String): Option[Player] = None
 
-      override def byId(id: String): Option[Player] = None
+        override def all: List[Player] = players
 
-      override def all: List[Player] = players
+        override def update(player: Player) = {
+          players = players map {
+            p => if (p.id == player.id) player else p
+          }
+        }
 
-      override def update(player: Player) = {
-        players = players map {
-          p => if (p.id == player.id) player else p
+        override def delete(id: String) = {
+          players = players.filter(_.id != id)
         }
       }
 
-      override def delete(id: String) = {
-        players = players.filter(_.id != id)
-      }
+      val logging: Logging = (message: String) => ???
+
+      val service: PlayerService = PlayerService(repository, logging)
     }
 
-    val logging: Logging = (message: String) => ???
-  }
-
   test("PlayerService.deleteWorst works correctly") {
-    val f = fixture
-    // construct fixture
-    val service = PlayerService(f.repository, f.logging)
-
     // perform the test
-    service.deleteWorst(150)
+    val fix = fixture
+
+    fix.service.deleteWorst(150)
 
     // validate the results
     assert(
-      f.repository.all == List(
+      fix.repository.all == List(
         Player("b", "John", "@bootcamp.com", 200),
         Player("c", "Jack", "@bootcamp.com", 300)
       )
@@ -590,14 +587,9 @@ class Excercise10Spec extends AnyFunSuite {
 
   test("PlayerService.celebrate works correctly") {
 
-    // construct fixture
     val fix = fixture
-    val repository = fix.repository
-    val logging = fix.logging
-    val service = PlayerService(repository, logging)
-
     // perform the test
-    service.celebrate(10)
+    fix.service.celebrate(10)
 
     // validate the results
     assert(
@@ -643,12 +635,12 @@ object Excercise12 {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   // 1. The type wrapped by `Future` could be changed by using `map`:
-  def dogs: Future[Int] = ???
+  def dogs: Future[Int] = Future { 10 }
   def message1: Future[String] = dogs map { dogs =>
     s"We have $dogs of dogs"
   }
   // 2. Two `Future` classes could be combined by `flatMap`:
-  def cats: Future[Int] = ???
+  def cats: Future[Int] = Future { 20 }
   def message2: Future[String] = dogs flatMap { dogs =>
     cats map { cats =>
       s"We have $dogs of dogs and $cats of cats"
@@ -687,7 +679,7 @@ object Excercise12 {
   // Set the value to another one:
   storage.set(List(5, 6, 7))
   // Get the current value from the storage:
-  val list = storage.get()
+  val list: Seq[Int] = storage.get()
 
   case class Player(id: String, name: String, email: String, score: Int)
   trait PlayerRepository {
@@ -720,11 +712,15 @@ object Excercise12 {
     /** Creates a new service working with existing repository */
     def apply(repository: PlayerRepository, logging: Logging): PlayerService = new PlayerService {
 
-      def deleteWorst(minimumScore: Int) = ???
-      def celebrate(bonus: Int) = ???
+      def deleteWorst(minimumScore: Int) = repository.all map {
+        players => players.filter(_.score < minimumScore).foreach(player => repository.delete(player.id))
+      }
 
+
+      def celebrate(bonus: Int) = repository.all map {
+        players => players.foreach(p => repository.update(player = p.copy(score = p.score + bonus)))
+      }
     }
-
   }
 
 }
@@ -734,37 +730,71 @@ object Excercise12 {
 //
 // sbt:scala-bootcamp> testOnly *testing2.Excercise12Spec
 //
-class Excercise12Spec extends AsyncFunSuite {
+class Excercise12Spec extends AsyncFunSuite with Matchers {
 
   import Excercise12._
 
+  def fixture = new {
+
+    val repository: PlayerRepository = new PlayerRepository {
+
+      var players = List(
+        Player("a", "Bill", "@bootcamp.com", 100),
+        Player("b", "John", "@bootcamp.com", 200),
+        Player("c", "Jack", "@bootcamp.com", 300)
+      )
+
+      override def byId(id: String): Future[Option[Player]] = Future { None }
+
+      override def all: Future[List[Player]] = Future { players }
+
+      override def update(player: Player): Future[Unit] = Future {
+        players = players.map {
+          p => if (p.id == player.id) player else p
+        }
+      }
+
+      override def delete(id: String): Future[Unit] = Future {
+        players = players.filter(_.id != id)
+      }
+    }
+
+    val logging = new Logging {
+      override def info(message: String): Future[Unit] = ???
+    }
+
+    val service: PlayerService = PlayerService(repository, logging)
+  }
+
   test("PlayerService.deleteWorst works correctly") {
 
-    // construct fixture
-    val repository = ???
-    val logging = ???
-    val service = PlayerService(repository, logging)
+    val fix = fixture
 
-    // perform the test
-    service.deleteWorst(???) map { _ =>
-      // validate the results
-      assert(???)
+    for {
+      _ <- fix.service.deleteWorst(150)
+      players <- fix.repository.all
+    } yield {
+      assert(players == List(
+        Player("b", "John", "@bootcamp.com", 200),
+        Player("c", "Jack", "@bootcamp.com", 300)
+      ))
     }
   }
 
   test("PlayerService.celebrate works correctly") {
 
-    // construct fixture
-    val repository = ???
-    val logging = ???
-    val service = PlayerService(repository, logging)
+    val fix = fixture
 
-    // perform the test
-    service.celebrate(???) map { _ =>
-      // validate the results
-      assert(???)
+    for {
+      _ <- fix.service.celebrate(10)
+      players <- fix.repository.all
+    } yield {
+      assert(players == List(
+        Player("a", "Bill", "@bootcamp.com", 110),
+        Player("b", "John", "@bootcamp.com", 210),
+        Player("c", "Jack", "@bootcamp.com", 310)
+      ))
     }
-
   }
 
 }
