@@ -6,10 +6,12 @@ import java.time.{LocalDate, ZonedDateTime}
 import cats.implicits.toBifunctorOps
 import cats.instances.list._
 import cats.syntax.traverse._
+import com.google.gson.JsonNull
 import io.circe
 import io.circe.generic.JsonCodec
 import io.circe.parser._
-import io.circe.{Decoder, HCursor}
+import io.circe.syntax.EncoderOps
+import io.circe.{Decoder, HCursor, Json}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -45,11 +47,21 @@ class JsonHomeworkSpec extends AnyWordSpec with Matchers with EitherValues{
 
 object JsonHomeworkSpec {
 
-  @JsonCodec final case class TeamTotals(assists: String, fullTimeoutRemaining: String, plusMinus: String)
+  import  io.circe.generic.extras._
 
-  implicit val teamTotalsDecoder: Decoder[TeamTotals] =
-    Decoder.forProduct3("assists", "full_timeout_remaining", "plusMinus")(TeamTotals.apply)
 
+  @ConfiguredJsonCodec
+  final case class TeamTotals(assists: String, fullTimeoutRemaining: String, plusMinus: String)
+
+  implicit val config: Configuration = Configuration.default.copy(
+    transformMemberNames = {
+      case "fullTimeoutRemaining" => "full_timeout_remaining"
+      case other => other
+    }
+  )
+
+  //  implicit val teamTotalsDecoder: Decoder[TeamTotals] =
+//    Decoder.forProduct3("assists", "full_timeout_remaining", "plusMinus")(TeamTotals.apply)
 
 //  implicit val decodeTeamTotals: Decoder[TeamTotals] = (c: HCursor) => for {
 //    assists <- c.downField("assists").as[String]
