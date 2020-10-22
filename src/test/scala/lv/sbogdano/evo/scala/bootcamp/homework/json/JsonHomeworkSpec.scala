@@ -51,14 +51,18 @@ object JsonHomeworkSpec {
 
 
   @ConfiguredJsonCodec
-  final case class TeamTotals(assists: String, fullTimeoutRemaining: String, plusMinus: String)
+  final case class TeamTotals(assists: String,
+                              @JsonKey("full_timeout_remaining") fullTimeoutRemaining: String,
+                              plusMinus: String)
 
-  implicit val config: Configuration = Configuration.default.copy(
-    transformMemberNames = {
-      case "fullTimeoutRemaining" => "full_timeout_remaining"
-      case other => other
-    }
-  )
+  implicit val config: Configuration = Configuration.default
+
+//  implicit val config: Configuration = Configuration.default.copy(
+//    transformMemberNames = {
+//      case "fullTimeoutRemaining" => "full_timeout_remaining"
+//      case other => other
+//    }
+//  )
 
   //  implicit val teamTotalsDecoder: Decoder[TeamTotals] =
 //    Decoder.forProduct3("assists", "full_timeout_remaining", "plusMinus")(TeamTotals.apply)
