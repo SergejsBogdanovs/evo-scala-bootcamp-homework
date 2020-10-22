@@ -45,14 +45,19 @@ class JsonHomeworkSpec extends AnyWordSpec with Matchers with EitherValues{
 
 object JsonHomeworkSpec {
 
-  @JsonCodec final case class TeamTotals(assists: String, fullTimeoutRemaining: String, plusMinus: String)// -fullTimeOut not defined
-  implicit val decodeTeamTotals: Decoder[TeamTotals] = (c: HCursor) => for {
-    assists <- c.downField("assists").as[String]
-    fullTimeoutRemaining <- c.downField("full_timeout_remaining").as[String]
-    plusMinus <- c.downField("plusMinus").as[String]
-  } yield {
-    TeamTotals(assists, fullTimeoutRemaining, plusMinus)
-  }
+  @JsonCodec final case class TeamTotals(assists: String, fullTimeoutRemaining: String, plusMinus: String)
+
+  implicit val teamTotalsDecoder: Decoder[TeamTotals] =
+    Decoder.forProduct3("assists", "full_timeout_remaining", "plusMinus")(TeamTotals.apply)
+
+
+//  implicit val decodeTeamTotals: Decoder[TeamTotals] = (c: HCursor) => for {
+//    assists <- c.downField("assists").as[String]
+//    fullTimeoutRemaining <- c.downField("full_timeout_remaining").as[String]
+//    plusMinus <- c.downField("plusMinus").as[String]
+//  } yield {
+//    TeamTotals(assists, fullTimeoutRemaining, plusMinus)
+//  }
 
   @JsonCodec final case class TeamBoxScore(totals: TeamTotals)
   @JsonCodec final case class GameStats(hTeam: TeamBoxScore, vTeam: TeamBoxScore)
