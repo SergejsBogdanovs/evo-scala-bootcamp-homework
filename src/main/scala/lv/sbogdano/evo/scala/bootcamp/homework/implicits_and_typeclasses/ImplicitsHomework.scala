@@ -69,7 +69,9 @@ object ImplicitsHomework {
       @tailrec
       def put(key: K, value: V): Unit = {
 
-        if (map.sizeScore + key.sizeScore + value.sizeScore > maxSizeScore) {
+        val sum = map.foldLeft(0)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
+
+        if (sum + key.sizeScore + value.sizeScore > maxSizeScore) {
           if (map.nonEmpty) {
             map -= map.head._1
             put(key, value)
@@ -157,9 +159,6 @@ object ImplicitsHomework {
       }
       implicit def mapSizeScore[K: GetSizeScore, V: GetSizeScore]: GetSizeScore[Map[K, V]] = (value: Map[K, V]) => {
         value.foldLeft(12)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
-      }
-      implicit def linkedHashMapSizeScore[K: GetSizeScore, V: GetSizeScore]: GetSizeScore[mutable.LinkedHashMap[K, V]] = (value: mutable.LinkedHashMap[K, V]) => {
-        value.foldLeft(0)((acc, m) => acc + m._1.sizeScore + m._2.sizeScore)
       }
     }
   }
