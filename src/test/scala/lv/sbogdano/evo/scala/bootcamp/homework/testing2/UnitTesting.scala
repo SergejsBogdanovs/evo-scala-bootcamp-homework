@@ -2,8 +2,9 @@ package lv.sbogdano.evo.scala.bootcamp.homework.testing2
 
 import java.util.concurrent.atomic.AtomicReference
 
-import cats.Monad
+import cats.{Id, Monad}
 import cats.data.State
+import cats.implicits.catsSyntaxApplicativeId
 import lv.sbogdano.evo.scala.bootcamp.homework.testing2.hal9000.HAL9000
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
@@ -870,6 +871,8 @@ object Excercise14 {
   }
   object PlayerService {
 
+    import cats.syntax.functor._ // map
+
     // Note: we are using special `Monad` type from `cats` library to avoid some boilerplate.
     // It gives us `map` and `flatMap` methods on our `F`. I.e. it says:
     // "we have something that have `map` and `flatMap` on it".
@@ -878,11 +881,13 @@ object Excercise14 {
     /** Creates a new service working with existing repository */
     def apply[F[_]: Monad](repository: PlayerRepository[F], logging: Logging[F]): PlayerService[F] = new PlayerService[F] {
 
-      def deleteWorst(minimumScore: Int) = ???
-      def celebrate(bonus: Int) = ???
-
+      def deleteWorst(minimumScore: Int) = repository.all map {
+        players => players.filter(_.score < minimumScore).foreach(player => repository.delete(player.id))
+      }
+      def celebrate(bonus: Int) = repository.all map {
+        players => players.foreach(p => repository.update(player = p.copy(score = p.score + bonus)))
+      }
     }
-
   }
 
 }
@@ -893,6 +898,9 @@ object Excercise14 {
 //
 class Excercise14FutureSpec extends AsyncFunSuite {
 
+  import cats.syntax.flatMap._
+  import cats.syntax.applicative._
+  import cats.implicits._
   import Excercise14._
 
   test("PlayerService.deleteWorst works correctly") {
