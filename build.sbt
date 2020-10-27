@@ -8,7 +8,8 @@ scalaVersion := "2.13.3"
 scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
-  "-Ymacro-annotations"
+  "-Ymacro-annotations",
+  "-language:higherKinds"
 )
 
 val http4sVersion = "0.21.7"
