@@ -58,7 +58,7 @@ object CatsFoldable {
    */
 
   /** Generic foldRight */
-  def foldRight[A, B](fa: F[A], b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
+  //def foldRight[A, B](fa: F[A], b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
 
   /** Using Eval means folding is always stack safe */
   val result2: Eval[Int] = Foldable[List].foldRight(List(1, 2, 3), Now(0))((x, acc) => Later(x + acc.value))
@@ -109,6 +109,6 @@ object CatsFoldable {
    */
   List(1, 2, 3).foldLeft(0)(_ + _) // uses foldLeft defined at List
 
-  def sum[F[_]: Foldable](values: F[Int]): Int = values.foldLeft(0)(_ + _) // used Foldable type class
+  //def sum[F[_]: Foldable](values: F[Int]): Int = values.foldLeft(0)(_ + _) // used Foldable type class
 
 }
