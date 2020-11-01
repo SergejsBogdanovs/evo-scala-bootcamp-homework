@@ -27,14 +27,17 @@ object AsyncHomework extends App {
   val links = for {
     body <- fetchPageBody(url)
     links <- findLinkUrls(body)
-  } yield links.map(fetchServerName)
+  } yield links
 
   links onComplete {
     case Success(links) => {
-      val futureServerNames = links.map(link => link.map(futureOption => futureOption.get))
-      val list = Future.sequence(futureServerNames)
-      list onComplete {
-        case Success(value) => value.sorted.foreach(println)
+      val listFutureServerNames = links.map(link => fetchServerName(link))
+      val traverse = Future.sequence(listFutureServerNames)
+      traverse onComplete {
+        case Success(serverNames) => serverNames
+          .map(serverName => serverName.getOrElse("Nothing"))
+          .sorted
+          .foreach(println)
         case Failure(exception) => exception.printStackTrace
       }
     }
