@@ -5,6 +5,7 @@ import java.util.concurrent.Executors
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
+import scala.util.{Failure, Success}
 
 /**
  * Application:
@@ -26,9 +27,20 @@ object AsyncHomework extends App {
   val links = for {
     body <- fetchPageBody(url)
     links <- findLinkUrls(body)
-  } yield links
+  } yield links.map(fetchServerName)
 
-  links.foreach(println)
+  links onComplete {
+    case Success(links) => {
+      val futureServerNames = links.map(link => link.map(futureOption => futureOption.get))
+      val list = Future.sequence(futureServerNames)
+      list onComplete {
+        case Success(value) => value.sorted.foreach(println)
+        case Failure(exception) => exception.printStackTrace
+      }
+    }
+    case Failure(exception) => exception.printStackTrace
+  }
+
 
   private def fetchPageBody(url: String): Future[String] = {
     println(f"Fetching $url")
