@@ -37,6 +37,7 @@ object AsyncHomework extends App {
         case Success(serverNames) => serverNames
           .map(serverName => serverName.getOrElse("Nothing"))
           .sorted
+          .distinct
           .foreach(println)
         case Failure(exception) => exception.printStackTrace()
       }
