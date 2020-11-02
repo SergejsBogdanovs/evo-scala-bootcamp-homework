@@ -22,10 +22,10 @@ import scala.util.{Failure, Success}
 object AsyncHomework extends App {
   private implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-  val url = "http://google.com"
+  val url = if (args.length == 0) "http://google.com" else args(0)
 
   val links = for {
-    body <- fetchPageBody(url)
+    body  <- fetchPageBody(url)
     links <- findLinkUrls(body)
   } yield links
 
@@ -38,10 +38,10 @@ object AsyncHomework extends App {
           .map(serverName => serverName.getOrElse("Nothing"))
           .sorted
           .foreach(println)
-        case Failure(exception) => exception.printStackTrace
+        case Failure(exception) => exception.printStackTrace()
       }
     }
-    case Failure(exception) => exception.printStackTrace
+    case Failure(exception) => exception.printStackTrace()
   }
 
 
