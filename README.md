@@ -34,3 +34,7 @@ Tests: [Tests](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/b
 
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/test/scala/lv/sbogdano/evo/scala/bootcamp/homework/json/JsonHomeworkSpec.scala)
 
+**Lesson Async**
+
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/async/AsyncHomework.scala)
+
