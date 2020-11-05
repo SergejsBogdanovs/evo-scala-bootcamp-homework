@@ -2,7 +2,6 @@ package lv.sbogdano.evo.scala.bootcamp.homework.effects
 
 
 import cats.implicits.toBifunctorOps
-import lv.sbogdano.evo.scala.bootcamp.homework.effects.EffectsHomework1.IO.raiseError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,14 +40,16 @@ object EffectsHomework1 {
 
     def as[B](newValue: => B): IO[B] = IO(run()).map(_ => newValue)
 
-    def void: IO[Unit] = IO(run).map(_ => Unit)
+    def void: IO[Unit] = IO(run()).map(_ => ())
 
     def attempt: IO[Either[Throwable, A]] = IO(Try(run()).toEither)
 
     def option: IO[Option[A]] = attempt.map(either => either.toOption)
 
-    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] =
-      attempt.map(_.leftMap(f))
+    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] = Try(run()) match {
+      case Failure(exception) => f(exception)
+      case Success(value)     => IO(value)
+    }
 
     def redeem[B](recover: Throwable => B, map: A => B): IO[B] =
       attempt.map(_.fold(recover, map))
@@ -62,11 +63,11 @@ object EffectsHomework1 {
   }
 
   object IO {
-    def apply[A](body: => A): IO[A] = new IO[A](() => body)
+    def apply[A](body: => A): IO[A] = delay(body)
 
-    def suspend[A](thunk: => IO[A]): IO[A] = ???
+    def suspend[A](thunk: => IO[A]): IO[A] = thunk.flatMap(a => delay(a))
 
-    def delay[A](body: => A): IO[A] = apply(body)
+    def delay[A](body: => A): IO[A] = new IO[A](() => body)
 
     def pure[A](a: A): IO[A] = new IO[A](() => a)
 
@@ -85,9 +86,9 @@ object EffectsHomework1 {
       case Success(value)     => IO(value)
     }
 
-    def none[A]: IO[Option[A]] = IO(None)
+    def none[A]: IO[Option[A]] = IO.pure(None)
 
-    def raiseError[A](e: Throwable): IO[A] = IO(e)
+    def raiseError[A](e: Throwable): IO[A] = IO(throw e)
 
     def raiseUnless(cond: Boolean)(e: => Throwable): IO[Unit] = if (cond) unit else raiseError(e)
 
