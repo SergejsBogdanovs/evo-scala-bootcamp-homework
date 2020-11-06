@@ -73,12 +73,12 @@ class EffectsHomework1Spec extends AnyFlatSpec {
     } yield assert(expected == actual)
   }
 
-//  "IO(new Throwable) handleErrorWith" should "return IO[String](\"Error\")" in {
-//    for {
-//      expected <- IO("Error")
-//      actual   <- IO(new IllegalArgumentException("Error")).handleErrorWith(err => IO("Error"))
-//    } yield assert(expected == actual)
-//  }
+  "IO(new IllegalArgumentException) handleErrorWith" should "return IO(Throwable)" in {
+    for {
+      expected <- IO(new Throwable)
+      actual   <- IO(new IllegalArgumentException).handleErrorWith(_ => IO(new Throwable))
+    } yield assert(expected == actual)
+  }
 
   "IO[Int](1) redeem" should "return IO(1)" in {
     for {
@@ -185,5 +185,81 @@ class EffectsHomework1Spec extends AnyFlatSpec {
     } yield assert(expected == actual)
   }
 
+  "IO.none[1] " should "return IO(None)" in {
+    for {
+      expected <- IO(None)
+      actual   <- IO.none[1]
+    } yield assert(expected == actual)
+  }
+
+  "IO.raiseError" should "throw Throwable" in {
+    for {
+      expected <- IO(new IllegalArgumentException)
+      actual   <- IO.raiseError[Throwable](new IllegalArgumentException)
+    } yield assert(expected == actual)
+  }
+
+  "IO.raiseUnless(true)" should "return IO[Unit]" in {
+    for {
+      expected <- IO(())
+      actual   <- IO.raiseUnless(cond = true)(new IllegalArgumentException)
+    } yield assert(expected == actual)
+  }
+
+  "IO.raiseUnless(false)" should "return IO[Throwable]" in {
+    for {
+      expected <- IO(new IllegalArgumentException)
+      actual   <- IO.raiseUnless(cond = false)(new IllegalArgumentException)
+    } yield assert(expected == actual)
+  }
+
+  "IO.raiseWhen(true)" should "return IO[Throwable]" in {
+    for {
+      expected <- IO(new IllegalArgumentException)
+      actual   <- IO.raiseWhen(cond = true)(new IllegalArgumentException)
+    } yield assert(expected == actual)
+  }
+
+  "IO.raiseWhen(false)" should "return IO[Unit]" in {
+    for {
+      expected <- IO(())
+      actual   <- IO.raiseWhen(cond = false)(new IllegalArgumentException)
+    } yield assert(expected == actual)
+  }
+
+  "IO.unlessA(true)" should "return IO[Unit]" in {
+    for {
+      expected <- IO(())
+      actual   <- IO.unlessA(cond = true)(action = IO(println("Hello")))
+    } yield assert(expected == actual)
+  }
+
+  "IO.unlessA(false)" should "return action" in {
+    for {
+      expected <- IO(println("Hello"))
+      actual   <- IO.unlessA(cond = false)(action = IO(println("Hello")))
+    } yield assert(expected == actual)
+  }
+
+  "IO.when(false)" should "return IO[Unit]" in {
+    for {
+      expected <- IO(())
+      actual   <- IO.whenA(cond = false)(action = IO(println("Hello")))
+    } yield assert(expected == actual)
+  }
+
+  "IO.when(true)" should "return action" in {
+    for {
+      expected <- IO(println("Hello"))
+      actual   <- IO.whenA(cond = true)(action = IO(println("Hello")))
+    } yield assert(expected == actual)
+  }
+
+  "IO.unit" should "return IO(())" in {
+    for {
+      expected <- IO(())
+      actual   <- IO.unit
+    } yield assert(expected == actual)
+  }
 
 }
