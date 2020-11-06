@@ -1,8 +1,6 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.effects
 
 
-import cats.implicits.toBifunctorOps
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
