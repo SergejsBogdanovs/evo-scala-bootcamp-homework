@@ -38,3 +38,8 @@ Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-home
 
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/async/AsyncHomework.scala)
 
+**Lesson Effects**
+
+Homework1: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/effects/EffectsHomework1.scala)
+
+Tests: [Tests](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/test/scala/lv/sbogdano/evo/scala/bootcamp/homework/effects/EffectsHomework1Spec.scala)
