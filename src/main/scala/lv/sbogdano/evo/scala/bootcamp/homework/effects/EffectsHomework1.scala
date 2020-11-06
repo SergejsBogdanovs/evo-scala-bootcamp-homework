@@ -32,13 +32,13 @@ object EffectsHomework1 {
   final class IO[A] private(val run: () => A) {
     def map[B](f: A => B): IO[B] = IO(f(run()))
 
-    def flatMap[B](f: A => IO[B]): IO[B] = f(run())
+    def flatMap[B](f: A => IO[B]): IO[B] = new IO(f(run()).run)
 
     def *>[B](another: IO[B]): IO[B] = IO(run()).flatMap(_ => another)
 
     def as[B](newValue: => B): IO[B] = IO(run()).map(_ => newValue)
 
-    def void: IO[Unit] = IO(run()).map(_ => ())
+    def void: IO[Unit] = map(_ => ())
 
     def attempt: IO[Either[Throwable, A]] = IO(Try(run()).toEither)
 
