@@ -84,7 +84,7 @@ object EffectsHomework1 {
       case Success(value)     => IO(value)
     }
 
-    def none[A]: IO[Option[A]] = IO.pure(None)
+    def none[A]: IO[Option[A]] = pure(None)
 
     def raiseError[A](e: Throwable): IO[A] = IO(throw e)
 
@@ -96,6 +96,6 @@ object EffectsHomework1 {
 
     def whenA(cond: Boolean)(action: => IO[Unit]): IO[Unit] = if (cond) action else unit
 
-    val unit: IO[Unit] = IO.pure(())
+    val unit: IO[Unit] = pure(())
   }
 }
