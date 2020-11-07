@@ -34,9 +34,9 @@ object EffectsHomework1 {
 
     def flatMap[B](f: A => IO[B]): IO[B] = IO(f(run()).run())
 
-    def *>[B](another: IO[B]): IO[B] = IO(run()).flatMap(_ => another)
+    def *>[B](another: IO[B]): IO[B] = flatMap(_ => another)
 
-    def as[B](newValue: => B): IO[B] = IO(run()).map(_ => newValue)
+    def as[B](newValue: => B): IO[B] = map(_ => newValue)
 
     def void: IO[Unit] = map(_ => ())
 
