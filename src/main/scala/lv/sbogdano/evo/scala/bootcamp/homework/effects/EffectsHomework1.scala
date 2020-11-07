@@ -63,7 +63,7 @@ object EffectsHomework1 {
   object IO {
     def apply[A](body: => A): IO[A] = delay(body)
 
-    def suspend[A](thunk: => IO[A]): IO[A] = thunk.flatMap(a => delay(a))
+    def suspend[A](thunk: => IO[A]): IO[A] = delay(thunk.run())
 
     def delay[A](body: => A): IO[A] = new IO[A](() => body)
 
