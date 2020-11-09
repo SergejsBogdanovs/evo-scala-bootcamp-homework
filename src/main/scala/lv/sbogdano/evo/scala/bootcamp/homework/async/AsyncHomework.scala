@@ -24,25 +24,21 @@ object AsyncHomework extends App {
 
   val url = if (args.length == 0) "http://google.com" else args(0)
 
-  val links = for {
-    body  <- fetchPageBody(url)
-    links <- findLinkUrls(body)
-  } yield links
+  val serverNamesFuture = for {
+    body           <- fetchPageBody(url)
+    links          <- findLinkUrls(body)
+    serverNamesOpt <- Future.sequence(links.map(link => fetchServerName(link)))
+  } yield serverNamesOpt.flatten.distinct.sorted
 
-  links onComplete {
-    case Success(links) => {
-      val listFutureServerNames = links.map(link => fetchServerName(link))
-      val traverse = Future.sequence(listFutureServerNames)
-      traverse onComplete {
-        case Success(serverNames) => serverNames
-          .map(serverName => serverName.getOrElse("Nothing"))
-          .sorted
-          .distinct
-          .foreach(println)
-        case Failure(exception) => exception.printStackTrace()
-      }
+  serverNamesFuture onComplete {
+    case Success(serverNamesFuture) => {
+      serverNamesFuture.foreach(println)
+      System.exit(0)
     }
-    case Failure(exception) => exception.printStackTrace()
+    case Failure(exception) => {
+      exception.printStackTrace()
+      System.exit(1)
+    }
   }
 
 
