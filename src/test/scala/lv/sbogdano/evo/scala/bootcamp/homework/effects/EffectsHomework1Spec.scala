@@ -131,19 +131,19 @@ class EffectsHomework1Spec extends AnyFlatSpec {
     } yield assert(1 == actual)
   }
 
-  "IO.pure(1) " should "return IO(1)" in {
+  "IO.pure(1)" should "return IO(1)" in {
     for {
       actual <- IO.pure(1)
     } yield assert(1 == actual)
   }
 
-  "IO.suspend(1) " should "return IO(1)" in {
+  "IO.suspend(IO(1))" should "return IO(1)" in {
     for {
       actual <- IO.suspend(IO(1))
     } yield assert(1 == actual)
   }
 
-  "IO.fromEither(Right(1)) " should "return IO(1)" in {
+  "IO.fromEither(Right(1))" should "return IO(1)" in {
     for {
       expected <- IO(1)
       actual   <- IO.fromEither(Right(1))
