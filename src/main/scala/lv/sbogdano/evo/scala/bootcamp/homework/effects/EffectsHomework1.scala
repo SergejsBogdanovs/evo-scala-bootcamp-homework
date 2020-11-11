@@ -44,10 +44,10 @@ object EffectsHomework1 {
 
     def option: IO[Option[A]] = attempt.map(either => either.toOption)
 
-    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] = IO(Try(run()) match {
-      case Failure(exception) => f(exception).run()
-      case Success(value)     => IO(value).run()
-    })
+    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] = attempt.flatMap {
+      case Left(exception) => f(exception)
+      case Right(value)    => IO.pure(value)
+    }
 
     def redeem[B](recover: Throwable => B, map: A => B): IO[B] =
       attempt.map(_.fold(recover, map))
@@ -71,17 +71,17 @@ object EffectsHomework1 {
 
     def fromEither[A](e: Either[Throwable, A]): IO[A] = e match {
       case Left(value)  => raiseError(value)
-      case Right(value) => IO(value)
+      case Right(value) => IO.pure(value)
     }
 
     def fromOption[A](option: Option[A])(orElse: => Throwable): IO[A] = option match {
       case None        => raiseError(orElse)
-      case Some(value) => IO(value)
+      case Some(value) => IO.pure(value)
     }
 
     def fromTry[A](t: Try[A]): IO[A] = t match {
       case Failure(exception) => raiseError(exception)
-      case Success(value)     => IO(value)
+      case Success(value)     => IO.pure(value)
     }
 
     def none[A]: IO[Option[A]] = pure(None)
