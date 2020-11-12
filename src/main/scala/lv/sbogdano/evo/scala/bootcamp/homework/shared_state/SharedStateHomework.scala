@@ -1,10 +1,13 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.shared_state
 
 import cats.Monad
-import cats.effect.{Clock, Concurrent, ExitCode, IO, IOApp, Timer}
 import cats.effect.concurrent.Ref
+import cats.effect.{Clock, Concurrent, ExitCode, Fiber, IO, IOApp, Sync, Timer}
+import cats.implicits._
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 /*
  * Please implement a Cache which allows concurrent access.
@@ -25,14 +28,26 @@ object SharedStateHomework extends IOApp {
     def put(key: K, value: V): F[Unit]
   }
 
+  object IosCommon {
+    val logger = Slf4jLogger.getLogger[IO]
+  }
+
+
   class RefCache[F[_] : Clock : Monad, K, V](
                                               state: Ref[F, Map[K, (Long, V)]],
                                               expiresIn: FiniteDuration
                                             ) extends Cache[F, K, V] {
 
-    def get(key: K): F[Option[V]] = ???
+    def get(key: K): F[Option[V]] = {
+      for {
+        mapValues <- state.get
+        value = mapValues.get(key).map(t => t._2)
+      } yield value
+    }
 
-    def put(key: K, value: V): F[Unit] = ???
+    def put(key: K, value: V): F[Unit] = {
+      state.update(f => f ++ Map(key -> (expiresIn.toMillis, value)))
+    }
 
   }
 
@@ -40,8 +55,20 @@ object SharedStateHomework extends IOApp {
     def of[F[_] : Clock, K, V](
                                 expiresIn: FiniteDuration,
                                 checkOnExpirationsEvery: FiniteDuration
-                              )(implicit T: Timer[F], C: Concurrent[F]): F[Cache[F, K, V]] = ???
+                              )(implicit T: Timer[F], C: Concurrent[F]): F[Cache[F, K, V]] = {
 
+      val currentTime = T.clock.realTime(MILLISECONDS)
+      val valueTime: F[Long] = currentTime.map(time => time + expiresIn.toMillis)
+
+      val check = C.uncancelable(T.sleep(checkOnExpirationsEvery))
+
+      for {
+        r <- Ref[F].of(Map[K, (Long, V)]())
+      } yield {
+        val cache = new RefCache[F, K, V](r, expiresIn)
+        cache
+      }
+    }
   }
 
   override def run(args: List[String]): IO[ExitCode] = {
