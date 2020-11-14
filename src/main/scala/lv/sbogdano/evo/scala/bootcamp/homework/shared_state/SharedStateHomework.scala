@@ -52,12 +52,12 @@ object SharedStateHomework extends IOApp {
 
       def deleteExpiredF(state: Ref[F, Map[K, (Long, V)]]): F[Unit] = {
         (for {
+          _      <- T.sleep(checkOnExpirationsEvery)
           map    <- state.get
           newMap <- C.delay(map.filter {
             case (_, v) => System.currentTimeMillis() - v._1 < expiresIn.toMillis
           })
           _      <- state.set(newMap)
-          _      <- T.sleep(checkOnExpirationsEvery)
         } yield ()) >> deleteExpiredF(state)
       }
 
