@@ -34,7 +34,7 @@ object SharedStateHomework extends IOApp {
     def get(key: K): F[Option[V]] = {
       for {
         mapValues <- state.get
-        value     = mapValues.get(key).map(t => t._2)
+        value     = mapValues.get(key).map { case (_, value) => value }
       } yield value
     }
 
