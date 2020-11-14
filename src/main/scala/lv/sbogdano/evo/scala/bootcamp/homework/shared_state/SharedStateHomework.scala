@@ -39,8 +39,10 @@ object SharedStateHomework extends IOApp {
     }
 
     def put(key: K, value: V): F[Unit] = {
-      val currentTime = System.currentTimeMillis()
-      state.update(f => f ++ Map(key -> (currentTime + expiresIn.toMillis, value)))
+      for {
+        currentTime <- Clock.apply.realTime(MILLISECONDS)
+        _           <- state.update(f => f ++ Map(key -> (currentTime + expiresIn.toMillis, value)))
+      } yield ()
     }
   }
 
@@ -52,10 +54,11 @@ object SharedStateHomework extends IOApp {
 
       def deleteExpiredF(state: Ref[F, Map[K, (Long, V)]]): F[Unit] = {
         (for {
-          _      <- T.sleep(checkOnExpirationsEvery)
-          map    <- state.get
-          newMap = map.filter {
-            case (_, v) => System.currentTimeMillis() - v._1 < expiresIn.toMillis
+          _           <- T.sleep(checkOnExpirationsEvery)
+          currentTime <- Clock.apply.realTime(MILLISECONDS)
+          map         <- state.get
+          newMap      = map.filter {
+            case (_, v) => currentTime - v._1 < expiresIn.toMillis
           }
           _      <- state.set(newMap)
         } yield ()) >> deleteExpiredF(state)
