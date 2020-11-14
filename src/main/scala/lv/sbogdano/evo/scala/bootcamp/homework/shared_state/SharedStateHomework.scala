@@ -61,7 +61,7 @@ object SharedStateHomework extends IOApp {
           newMap      = map.filter {
             case (_, v) => currentTime - v._1 < expiresIn.toMillis
           }
-          _      <- state.set(newMap)
+          _           <- state.set(newMap)
         } yield ()) >> deleteExpiredF(state)
       }
 
