@@ -42,7 +42,6 @@ object SharedStateHomework extends IOApp {
       val currentTime = System.currentTimeMillis()
       state.update(f => f ++ Map(key -> (currentTime + expiresIn.toMillis, value)))
     }
-
   }
 
   object Cache {
@@ -54,7 +53,9 @@ object SharedStateHomework extends IOApp {
       def deleteExpiredF(state: Ref[F, Map[K, (Long, V)]]): F[Unit] = {
         (for {
           map    <- state.get
-          newMap <- C.delay(map.filter(t => System.currentTimeMillis() - t._2._1 < expiresIn.toMillis))
+          newMap <- C.delay(map.filter {
+            case (_, v) => System.currentTimeMillis() - v._1 < expiresIn.toMillis
+          })
           _      <- state.set(newMap)
           _      <- T.sleep(checkOnExpirationsEvery)
         } yield ()) >> deleteExpiredF(state)
