@@ -49,9 +49,9 @@ object EffectsHomework2 {
 
     def option: IO[Option[A]] = attempt.map(either => either.toOption)
 
-    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] = Try(run()) match {
-      case Failure(exception) => f(exception)
-      case Success(value)     => IO(value)
+    def handleErrorWith[AA >: A](f: Throwable => IO[AA]): IO[AA] = attempt.flatMap {
+      case Left(exception) => f(exception)
+      case Right(value)    => IO.pure(value)
     }
 
     def redeem[B](recover: Throwable => B, map: A => B): IO[B] = attempt.map(_.fold(recover, map))
