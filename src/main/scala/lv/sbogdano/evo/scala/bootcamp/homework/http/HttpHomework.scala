@@ -18,7 +18,11 @@ import cats.effect.{ExitCode, IO, IOApp}
 //
 // Use HTTP or WebSocket for communication. The exact protocol and message format to use is not specified and
 // should be designed while working on the task.
-object GuessClient extends IOApp{
-
+object GuessServer extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = ???
 }
+
+object GuessClient extends IOApp {
+  override def run(args: List[String]): IO[ExitCode] = ???
+}
+
