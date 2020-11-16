@@ -1,6 +1,14 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.http
 
 import cats.effect.{ExitCode, IO, IOApp}
+import org.http4s.HttpRoutes
+import org.http4s.dsl.io.{Ok, _}
+import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
+import org.http4s.server.blaze.BlazeServerBuilder
+
+import scala.concurrent.ExecutionContext
+import scala.util.Random
+
 
 // Homework. Place the solution under `http` package in your homework repository.
 //
@@ -19,10 +27,73 @@ import cats.effect.{ExitCode, IO, IOApp}
 // Use HTTP or WebSocket for communication. The exact protocol and message format to use is not specified and
 // should be designed while working on the task.
 object GuessServer extends IOApp {
-  override def run(args: List[String]): IO[ExitCode] = ???
+
+
+  private val jsonRoutes = {
+    import GuessGame._
+    import org.http4s.circe.CirceEntityCodec._
+    import io.circe.generic.auto._
+    import io.circe.syntax._
+
+    val GUESS_GAME = "guessgame"
+    val START_GAME = "startgame"
+    val CLIENT_GUESS_NUMBER = "clientguessnumber"
+
+    val startGame = StartGame(minGuessNumber = 1, maxGuessNumber = 10, maxAttempt = 3)
+    val serverNumber = new Random().between(startGame.minGuessNumber, startGame.maxGuessNumber + 1)
+    println(serverNumber)
+
+    HttpRoutes.of[IO] {
+      // curl "localhost:9001/guessgame/startgame"
+      case GET -> Root / GUESS_GAME / START_GAME =>
+        Ok(startGame.asJson)
+
+      // curl -XPOST "localhost:9001/guessgame/clientguessnumber" -d '{"number": "3"}' -H "Content-Type: application/json"
+      case req @ POST -> Root / GUESS_GAME / CLIENT_GUESS_NUMBER =>
+        req.as[ClientGuess].flatMap { clientGuess =>
+
+          clientGuess.number match {
+            case n if n == serverNumber => Ok(ServerEvaluatedResponds(Equal).asJson)
+            case n if n < serverNumber  => Ok(ServerEvaluatedResponds(Lower).asJson)
+            case n if n > serverNumber  => Ok(ServerEvaluatedResponds(Greater).asJson)
+          }
+        }
+    }
+  }
+
+  private val httpApp = {
+    jsonRoutes
+  }.orNotFound
+
+  override def run(args: List[String]): IO[ExitCode] =
+    BlazeServerBuilder[IO](ExecutionContext.global)
+      .bindHttp(port = 9001, host = "localhost")
+      .withHttpApp(httpApp)
+      .serve
+      .compile
+      .drain
+      .as(ExitCode.Success)
+
 }
 
 object GuessClient extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = ???
+}
+
+object GuessGame {
+
+  sealed trait EvaluatedRespond
+  final case object Lower extends EvaluatedRespond
+  final case object Greater extends EvaluatedRespond
+  final case object Equal extends EvaluatedRespond
+
+  final case class StartGame(minGuessNumber: Int, maxGuessNumber: Int, maxAttempt: Int)
+
+  final case class ServerNumber(serverNumber: Int)
+
+  final case class ClientGuess(number: Int)
+
+  final case class ServerEvaluatedResponds(evaluatedRespond: EvaluatedRespond)
+
 }
 
