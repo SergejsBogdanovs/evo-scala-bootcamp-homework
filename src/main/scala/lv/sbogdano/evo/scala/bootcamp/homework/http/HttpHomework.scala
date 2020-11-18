@@ -3,19 +3,18 @@ package lv.sbogdano.evo.scala.bootcamp.homework.http
 import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.effect.{Blocker, Clock, Concurrent, ExitCode, IO, IOApp, Timer}
+import cats.implicits._
 import io.circe.Json
 import lv.sbogdano.evo.scala.bootcamp.homework.http.GuessGame._
+import org.http4s.client.Client
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.dsl.io._
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{HttpRoutes, Method, Request, ResponseCookie}
-import cats.implicits._
-import org.http4s.client.Client
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 import scala.util.Random
 
 
