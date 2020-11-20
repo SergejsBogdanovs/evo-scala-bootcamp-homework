@@ -47,3 +47,7 @@ Tests: [Tests](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/b
 **Lesson SharedState**
 
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/shared_state/SharedStateHomework.scala)
+
+**Lesson Containers**
+
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/containers/docker-compose.yml)
