@@ -48,12 +48,11 @@ final class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Act
   private def doRemove(m: Remove): Unit = {
     if (allElements.contains(m.elem)) {
       val actor = allElements(m.elem)
-      subtrees.filter {
+      subtrees = subtrees.filter {
         case (_, ref) => ref != actor
       }
       allElements -= m.elem
     }
-
     m.requester ! OperationFinished(m.id)
   }
 }
