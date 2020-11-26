@@ -51,3 +51,7 @@ Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-home
 **Lesson Containers**
 
 Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/containers/docker-compose.yml)
+
+**Lesson Akka Actors**
+
+Homework: [Solution](https://github.com/SergejsBogdanovs/evo-scala-bootcamp-homework/blob/master/src/main/scala/lv/sbogdano/evo/scala/bootcamp/homework/akka/actors/homework/BinaryTreeNode.scala)
