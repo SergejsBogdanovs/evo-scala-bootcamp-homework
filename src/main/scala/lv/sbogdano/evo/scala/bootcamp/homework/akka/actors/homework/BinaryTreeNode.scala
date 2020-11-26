@@ -1,9 +1,7 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.akka.actors.homework
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import lv.sbogdano.evo.scala.bootcamp.homework.akka.actors.homework.BinaryTreeSet.OperationReply.{ContainsResult, OperationFinished}
-
-import scala.collection.mutable.ListBuffer
 
 object BinaryTreeNode {
   private sealed trait Position
