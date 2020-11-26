@@ -25,7 +25,6 @@ final class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Act
     case insert: Insert     => doInsert(insert)
     case contains: Contains => doContains(contains)
     case remove: Remove     => doRemove(remove)
-    case _ => ""
   }
 
   private def doInsert(m: Insert): Unit = {
@@ -36,26 +35,33 @@ final class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Act
         case None => {
           val actor = context.actorOf(BinaryTreeNode.props(m.elem, initiallyRemoved = false))
           subtrees = subtrees + (position -> actor)
+          m.requester ! OperationFinished(m.id)
         }
       }
+    } else {
+      m.requester ! OperationFinished(m.id)
     }
-    m.requester ! OperationFinished(m.id)
   }
 
   private def doContains(m: Contains): Unit = {
     if (m.elem == elem) {
-      m.requester ! ContainsResult(m.id, result = true)
-    } else if (subtrees.nonEmpty)
+      if (removed) m.requester ! ContainsResult(m.id, false) else m.requester ! ContainsResult(m.id, true)
+    } else if (subtrees.nonEmpty) {
       subtrees.values.foreach(a => a ! m)
-    else {
-      m.requester ! ContainsResult(m.id, result = false)
+    } else {
+      m.requester ! ContainsResult(m.id, false)
     }
   }
 
   private def doRemove(m: Remove): Unit = {
+    if (m.elem == elem) {
+      removed = true
+      m.requester ! OperationFinished(m.id)
+    } else if (subtrees.nonEmpty) {
+      subtrees.values.foreach(a => a ! m)
+    } else {
+      m.requester ! OperationFinished(m.id)
+    }
 
-
-
-    m.requester ! OperationFinished(m.id)
   }
 }
