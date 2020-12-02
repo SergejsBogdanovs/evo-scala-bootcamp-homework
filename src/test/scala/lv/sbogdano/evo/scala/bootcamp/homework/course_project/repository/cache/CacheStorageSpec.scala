@@ -68,7 +68,6 @@ class CacheStorageSpec extends AnyFlatSpec with Matchers {
     //val service: Service = Service(storage)
 
     // TODO make authentication
-    // TODO make errors through ADTs
     // TODO correct types for years, locations, id
     // TODO add websocket (at least empty, then will add routes)
     // TODO write tests on input verification

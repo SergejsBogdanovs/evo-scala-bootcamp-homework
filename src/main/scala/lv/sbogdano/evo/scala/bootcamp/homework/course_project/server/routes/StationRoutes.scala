@@ -49,16 +49,16 @@ object StationRoutes {
       case req@PUT -> Root / "admin" / "stations" as admin =>
         req.req.as[StationEntity].flatMap { stationEntity =>
           service.updateStation(stationEntity).flatMap {
-            case Right(value)  => Ok(value)
-            case Left(message) => NotFound(message)
+            case Right(stationEntity) => Ok(stationEntity)
+            case Left(message)        => NotFound(message)
           }
         }
 
       // curl -X DELETE "localhost:8761/api/v1/admin/stations/uniqueName
       case DELETE -> Root / "admin" / "stations" / uniqueName as admin =>
         service.deleteStation(uniqueName).flatMap {
-          case Right(value)  => Ok(value)
-          case Left(message) => NotFound(message)
+          case Right(uniqueName) => Ok(uniqueName)
+          case Left(message)     => NotFound(message)
         }
     }
   }
@@ -69,8 +69,8 @@ object StationRoutes {
       // curl localhost:8761/api/v1/user/stations/as130
       case GET -> Root / "user" / "stations" / name =>
         service.filterStations(name).flatMap {
-          case Right(value)  => Ok(value)
-          case Left(message) => NotFound(message)
+          case Right(stationEntities) => Ok(stationEntities)
+          case Left(message)          => NotFound(message)
         }
     }
   }

@@ -1,33 +1,54 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth
 
-import cats.data.{Kleisli, OptionT}
+import cats.data._
 import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
-import org.http4s.{AuthedRequest, AuthedRoutes, Header, Request, Response, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, User}
+import org.http4s._
 import org.http4s.util.CaseInsensitiveString
+
+import scala.util.Try
 
 object Auth {
 
   type AuthError = String
+  type Id = Long
+  type Token = String
 
-  val users: Map[String, Role] = Map(
-    //"user" -> User(1, "user"),
-    "admin" -> Admin(2, "admin")
+  val users: Map[Id, Role] = Map(
+    12345L -> User,
+    6789L -> Admin
   )
 
-  def getAuthUserFromHeader(value: String): IO[Option[Role]] = {
-    IO {
-      users.get(value)
+  val tokens: Map[String, String] = Map(
+    "admin" -> "12345",
+    "user" -> "6789"
+  )
+
+  def getAuthUser(message: Either[Serializable, Long]): IO[Either[AuthError, Role]] = {
+    message match {
+      case Left(_)      => IO("Invalid token".asLeft)
+      case Right(token) => {
+        users.get(token) match {
+          case Some(role) => role match {
+            case User  => IO(User.asRight)
+            case Admin => IO(Admin.asRight)
+          }
+          case None => IO("Not found user by token".asLeft)
+        }
+      }
     }
   }
 
   def authUser: Kleisli[IO, Request[IO], Either[AuthError, Role]] = Kleisli { request: Request[IO] =>
-    val headerOpt: Option[Header] = request.headers.get(CaseInsensitiveString("Authorization"))
-    headerOpt match {
-      case Some(header) => getAuthUserFromHeader(header.value).map(_.toRight("Error"))
-      case None         => IO.pure("Header Error".asLeft)
-    }
 
+    val message = for {
+      header  <- request.headers.get(CaseInsensitiveString("Authorization")).toRight("Couldn't find an Authorization header")
+      token   <- tokens.get(header.value).toRight("Invalid token")
+      message <- Try(token.toLong).toEither
+    } yield message
+
+    getAuthUser(message)
   }
 
   def inAuthFailure: AuthedRoutes[AuthError, IO] = Kleisli { request: AuthedRequest[IO, AuthError] =>
