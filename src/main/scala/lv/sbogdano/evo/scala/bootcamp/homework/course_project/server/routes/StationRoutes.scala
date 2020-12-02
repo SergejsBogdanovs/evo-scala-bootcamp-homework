@@ -50,7 +50,7 @@ object StationRoutes {
         req.req.as[StationEntity].flatMap { stationEntity =>
           service.updateStation(stationEntity).flatMap {
             case Right(value)  => Ok(value)
-            case Left(message) => BadRequest(message)
+            case Left(message) => NotFound(message)
           }
         }
 
@@ -58,7 +58,7 @@ object StationRoutes {
       case DELETE -> Root / "admin" / "stations" / uniqueName as admin =>
         service.deleteStation(uniqueName).flatMap {
           case Right(value)  => Ok(value)
-          case Left(message) => BadRequest(message)
+          case Left(message) => NotFound(message)
         }
     }
   }

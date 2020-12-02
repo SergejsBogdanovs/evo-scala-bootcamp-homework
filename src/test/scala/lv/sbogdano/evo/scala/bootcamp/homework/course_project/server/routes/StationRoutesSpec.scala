@@ -107,7 +107,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     val response: IO[Response[IO]] = router.run(request)
     check[String](
       actualResponseIO = response,
-      expectedStatus = Status.BadRequest,
+      expectedStatus = Status.NotFound,
       expectedBody = updateStationErrorJson
     )
   }
@@ -210,7 +210,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     val response: IO[Response[IO]] = router.run(request)
     check[String](
       actualResponseIO = response,
-      expectedStatus = Status.BadRequest,
+      expectedStatus = Status.NotFound,
       expectedBody = deleteStationErrorJson
     )
   }
