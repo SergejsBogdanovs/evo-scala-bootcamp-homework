@@ -13,11 +13,10 @@ object Auth {
 
   type AuthError = String
   type Id = Long
-  type Token = String
 
   val users: Map[Id, Role] = Map(
-    12345L -> User,
-    6789L -> Admin
+    12345L -> Admin,
+    6789L -> User
   )
 
   val tokens: Map[String, String] = Map(

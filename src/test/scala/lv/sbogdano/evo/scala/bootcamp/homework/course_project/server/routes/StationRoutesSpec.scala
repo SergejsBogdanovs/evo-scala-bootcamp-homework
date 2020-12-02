@@ -15,7 +15,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
 
 
   // UNAUTHORIZED CREATE
-  "HttpService" should "receive 401 Unauthorized error when unauthorized user try CREATE Station" in new Scope {
+  "HttpService" should "receive Status 401 Unauthorized error when unauthorized user try CREATE Station" in new Scope {
     val request: Request[IO] = Request(
       method = Method.POST,
       uri = postUri,
@@ -31,7 +31,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
   }
 
   // UNAUTHORIZED UPDATE
-  it should "receive 401 Unauthorized error when unauthorized user try UPDATE Station" in new Scope {
+  it should "receive Status 401 Unauthorized error when unauthorized user try UPDATE Station" in new Scope {
     val request: Request[IO] = Request(
       method = Method.PUT,
       uri = postUri,
@@ -47,7 +47,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
   }
 
   // UNAUTHORIZED DELETE
-  it should "receive 401 Unauthorized error when unauthorized user try DELETE Station" in new Scope {
+  it should "receive Status 401 Unauthorized error when unauthorized user try DELETE Station" in new Scope {
     val request: Request[IO] = Request(
       method = Method.DELETE,
       uri = postUri,
@@ -62,8 +62,30 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
+  // UNAUTHORIZED GET
+  it should "receive Status 401 Unauthorized when unauthorized user GET Stations" in new Scope {
+
+    // Prepopulate Storage
+    val cacheStorage: CacheStorage = CacheStorage()
+    cacheStorage.createStation(stationMock)
+    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
+
+    val getRequest: Request[IO] = Request(
+      method = Method.GET,
+      uri = getUri,
+      body = EmptyBody
+    )
+
+    val response: IO[Response[IO]] = routerGet.run(getRequest)
+    check[String](
+      actualResponseIO = response,
+      expectedStatus = Status.Unauthorized,
+      expectedBody = ""
+    )
+  }
+
   // INVALID URI
-  it should "receive 404 Not Found error when uri is wrong" in new Scope {
+  it should "receive Status 404 Not Found error when uri is wrong" in new Scope {
     val request: Request[IO] = Request(
       method = Method.POST,
       uri = wrongUri,
@@ -77,8 +99,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // AUTHORIZED CREATE
-  it should "receive Status 201 Created and StationBody as body when authorized user created Station successfully" in new Scope {
+  // AUTHORIZED CREATE as ADMIN
+  it should "receive Status 201 Created and StationBody as body when authorized as ADMIN created Station successfully" in new Scope {
     val request: Request[IO] = Request(
       method = Method.POST,
       uri = postUri,
@@ -94,8 +116,25 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // INVALID UPDATE
-  it should "receive Status 400 BadRequest when authorized user try to update Station which is not in Storage" in new Scope {
+  // AUTHORIZED CREATE as USER
+  it should "receive Status 401 Unauthorized when authorized USER try CREATE Station" in new Scope {
+    val request: Request[IO] = Request(
+      method = Method.POST,
+      uri = postUri,
+      body = Stream.emits(os = createStationJson.map(_.toByte)),
+      headers = Headers.of(Header("Authorization", "user"))
+    )
+
+    val response: IO[Response[IO]] = router.run(request)
+    check[String](
+      actualResponseIO = response,
+      expectedStatus = Status.Unauthorized,
+      expectedBody = "",
+    )
+  }
+
+  // INVALID UPDATE. ADMIN
+  it should "receive Status 404 Not found when authorized ADMIN try to UPDATE Station which is not in Storage" in new Scope {
 
     val request: Request[IO] = Request(
       method = Method.PUT,
@@ -112,8 +151,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // VALID UPDATE
-  it should "receive Status 200 Ok and updated StationEntity when authorized user update Station successfully" in new Scope {
+  // VALID UPDATE. ADMIN
+  it should "receive Status 200 Ok and updated StationEntity when authorized ADMIN UPDATE Station successfully" in new Scope {
 
     // Prepopulate Storage
     val cacheStorage: CacheStorage = CacheStorage()
@@ -135,8 +174,31 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // AUTHORIZED GET
-  it should "receive Status 200 Ok and List[StationEntity] when authorized user get Stations" in new Scope {
+  // INVALID UPDATE. USER
+  it should "receive Status 401 Unauthorized when authorized USER try UPDATE Station" in new Scope {
+
+    // Prepopulate Storage
+    val cacheStorage: CacheStorage = CacheStorage()
+    cacheStorage.createStation(stationMock)
+    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
+
+    val updateRequest: Request[IO] = Request(
+      method = Method.PUT,
+      uri = postUri,
+      body = Stream.emits(os = updateStationJson.map(_.toByte)),
+      headers = Headers.of(Header("Authorization", "user"))
+    )
+
+    val response: IO[Response[IO]] = routerUpdate.run(updateRequest)
+    check[String](
+      actualResponseIO = response,
+      expectedStatus = Status.Unauthorized,
+      expectedBody = ""
+    )
+  }
+
+  // AUTHORIZED GET. ADMIN
+  it should "receive Status 200 Ok and List[StationEntity] when authorized ADMIN GET Stations" in new Scope {
 
     // Prepopulate Storage
     val cacheStorage: CacheStorage = CacheStorage()
@@ -158,8 +220,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // UNAUTHORIZED GET
-  it should "receive Status 200 Ok and List[StationEntity] when unauthorized user get Stations" in new Scope {
+  // AUTHORIZED GET. USER
+  it should "receive Status 200 Ok and List[StationEntity] when authorized USER GET Stations" in new Scope {
 
     // Prepopulate Storage
     val cacheStorage: CacheStorage = CacheStorage()
@@ -169,7 +231,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     val getRequest: Request[IO] = Request(
       method = Method.GET,
       uri = getUri,
-      body = EmptyBody
+      body = EmptyBody,
+      headers = Headers.of(Header("Authorization", "user"))
     )
 
     val response: IO[Response[IO]] = routerGet.run(getRequest)
@@ -180,13 +243,14 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // INVALID GET
-  it should "receive 404 Not found when user get Stations which are not in Storage" in new Scope {
+  // INVALID GET. ADMIN
+  it should "receive Status 404 Not found when ADMIN get Stations which are not in Storage" in new Scope {
 
     val getRequest: Request[IO] = Request(
       method = Method.GET,
       uri = getUri,
-      body = EmptyBody
+      body = EmptyBody,
+      headers = Headers.of(Header("Authorization", "admin"))
     )
 
     val response: IO[Response[IO]] = router.run(getRequest)
@@ -198,7 +262,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
   }
 
   // INVALID DELETE
-  it should "receive Status 400 BadRequest when authorized user try delete Station which is not in Storage" in new Scope {
+  it should "receive Status 404 Not Found when authorized ADMIN try delete Station which is not in Storage" in new Scope {
 
     val request: Request[IO] = Request(
       method = Method.DELETE,
@@ -215,8 +279,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
     )
   }
 
-  // VALID DELETE
-  it should "receive Status 200 Ok and deleted StationEntity uniqueName when authorized user delete Station successfully" in new Scope {
+  // VALID DELETE. ADMIN
+  it should "receive Status 200 Ok and deleted StationEntity uniqueName when authorized ADMIN delete Station successfully" in new Scope {
 
     // Prepopulate Storage
     val cacheStorage: CacheStorage = CacheStorage()
@@ -235,6 +299,29 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers  {
       actualResponseIO = response,
       expectedStatus = Status.Ok,
       expectedBody = deletedStationResponse
+    )
+  }
+
+  // INVALID DELETE. USER
+  it should "receive Status 401 Unauthorized when authorized USER try DELETE Station" in new Scope {
+
+    // Prepopulate Storage
+    val cacheStorage: CacheStorage = CacheStorage()
+    cacheStorage.createStation(stationMock)
+    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
+
+    val deleteRequest: Request[IO] = Request(
+      method = Method.DELETE,
+      uri = deleteUri,
+      body = EmptyBody,
+      headers = Headers.of(Header("Authorization", "user"))
+    )
+
+    val response: IO[Response[IO]] = routerUpdate.run(deleteRequest)
+    check[String](
+      actualResponseIO = response,
+      expectedStatus = Status.Unauthorized,
+      expectedBody = ""
     )
   }
 
