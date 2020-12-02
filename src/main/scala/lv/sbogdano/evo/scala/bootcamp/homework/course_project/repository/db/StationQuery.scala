@@ -91,7 +91,7 @@ object StationQuery {
   def delete(uniqueName: String): doobie.Update0 = {
     sql"""
          |DELETE FROM stations
-         |WHERE id = $uniqueName
+         |WHERE uniqueName = $uniqueName
        """.stripMargin
       .update
   }

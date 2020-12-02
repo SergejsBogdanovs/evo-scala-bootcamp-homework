@@ -25,7 +25,7 @@ class StationValidatedSpec extends AnyFlatSpec with Matchers {
     )
 
     stationValidated.toStationEntity shouldBe StationEntity(
-      uniqueName = "Riga#TP34",
+      uniqueName = "Riga_TP34",
       stationAddress = "streetName 123",
       construction = "Indoor",
       yearOfManufacture = 1978,

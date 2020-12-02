@@ -11,7 +11,7 @@ object Auth {
   type AuthError = String
 
   val users: Map[String, Role] = Map(
-    "user" -> User(1, "user"),
+    //"user" -> User(1, "user"),
     "admin" -> Admin(2, "admin")
   )
 

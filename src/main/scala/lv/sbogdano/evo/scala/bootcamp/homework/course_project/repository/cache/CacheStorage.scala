@@ -9,7 +9,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.R
 
 
 class CacheStorage extends Storage {
-  // TODO complete
+
   var stations: List[StationEntity] = List.empty[StationEntity]
 
   override def createStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]] = {
@@ -47,7 +47,6 @@ class CacheStorage extends Storage {
       case None => IO(DeleteStationError("Not found station to delete").asLeft)
     }
   }
-
 
 }
 
