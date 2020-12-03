@@ -40,9 +40,9 @@ object StationRoutes {
       // curl -X POST "localhost:8761/api/v1/admin/stations" -H "Content-Type: application/json" -d '{"uniqueName": "Riga_AS130","stationAddress": "Dammes 6","construction": "construction","yearOfManufacture": 2010,"inServiceFrom": 2011,"name": "as130","cityRegion": "Riga","latitude": 123.45,"longitude": "45.6123","zoneOfResponsibility": "latgale"}'
       case req@POST -> Root / "admin" / "stations" as role =>
         role match {
-          case Role.User => IO(Response(Unauthorized))
+          case User => IO(Response(Unauthorized))
 
-          case Role.Admin =>
+          case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
               service.createStation(stationEntity).flatMap {
                 case Right(stationEntity) => Created(stationEntity)
@@ -54,9 +54,9 @@ object StationRoutes {
       //  curl -X PUT "localhost:8761/api/v1/admin/stations" -H "Content-Type: application/json" -d '{"uniqueName": "35016_AS130","address": "Brivibas 5","construction": "construction","yearOfManufacture": "2015","inServiceFrom": "2010","name": "as116","cityRegion": "Dagda","objectType": "A/st","x": "456123","y": "123456","zoneOfResponsibility": "123456"}'
       case req@PUT -> Root / "admin" / "stations" as role =>
         role match {
-          case Role.User => IO(Response(Unauthorized))
+          case User => IO(Response(Unauthorized))
 
-          case Role.Admin =>
+          case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
               service.updateStation(stationEntity).flatMap {
                 case Right(stationEntity) => Ok(stationEntity)
@@ -67,10 +67,10 @@ object StationRoutes {
 
       // curl -X DELETE "localhost:8761/api/v1/admin/stations/uniqueName
       case DELETE -> Root / "admin" / "stations" / uniqueName as role =>
-
         role match {
-          case Role.User => IO(Response(Unauthorized))
-          case Role.Admin =>
+          case User => IO(Response(Unauthorized))
+
+          case Admin =>
             service.deleteStation(uniqueName).flatMap {
               case Right(uniqueName) => Ok(uniqueName)
               case Left(message) => NotFound(message)
