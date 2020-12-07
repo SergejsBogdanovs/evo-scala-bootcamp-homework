@@ -3,37 +3,33 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth
 import cats.data._
 import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, User}
-import org.http4s._
-import org.http4s.util.CaseInsensitiveString
-
-import scala.util.Try
+import io.circe.generic.auto._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, Worker}
+import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
+import org.http4s.dsl.io._
+import org.http4s.headers.`Set-Cookie`
+import org.http4s.{AuthedRequest, _}
 
 object Auth {
 
   type AuthError = String
-  type Id = Long
+  type Id = String
 
   val users: Map[Id, Role] = Map(
-    12345L -> Admin,
-    6789L -> User
+    "worker" -> Worker,
+    "admin" -> Admin
   )
 
-  val tokens: Map[String, String] = Map(
-    "admin" -> "12345",
-    "user" -> "6789"
-  )
-
-  def getAuthUser(message: Either[Serializable, Long]): IO[Either[AuthError, Role]] = {
-    message match {
-      case Left(_)      => IO("Invalid token".asLeft)
-      case Right(token) => {
-        users.get(token) match {
+  def getAuthUser(cookie: Option[`Set-Cookie`]): IO[Either[AuthError, Role]] = {
+    cookie match {
+      case None            => IO("Couldn't find the authcookie".asLeft)
+      case Some(setCookie) => {
+        users.get(setCookie.cookie.content) match {
           case Some(role) => role match {
-            case User  => IO(User.asRight)
-            case Admin => IO(Admin.asRight)
+            case Worker => IO(Worker.asRight)
+            case Admin  => IO(Admin.asRight)
           }
-          case None => IO("Not found user by token".asLeft)
+          case None => IO("Not found user by authcookie".asLeft)
         }
       }
     }
@@ -41,13 +37,11 @@ object Auth {
 
   def authUser: Kleisli[IO, Request[IO], Either[AuthError, Role]] = Kleisli { request: Request[IO] =>
 
-    val message = for {
-      header  <- request.headers.get(CaseInsensitiveString("Authorization")).toRight("Couldn't find an Authorization header")
-      token   <- tokens.get(header.value).toRight("Invalid token")
-      message <- Try(token.toLong).toEither
-    } yield message
+    val cookie = for {
+      c <- headers.`Set-Cookie`.from(request.headers).find(sc => sc.cookie.name == "authcookie")
+    } yield c
 
-    getAuthUser(message)
+    getAuthUser(cookie)
   }
 
   def inAuthFailure: AuthedRoutes[AuthError, IO] = Kleisli { request: AuthedRequest[IO, AuthError] =>
@@ -55,6 +49,25 @@ object Auth {
       case _ => {
         OptionT.pure[IO](Response[IO](Status.Unauthorized))
       }
+    }
+  }
+
+  def verifyLogin(req: Request[IO]): IO[Either[AuthError, Role]] = {
+    req.as[User].flatMap(user => {
+      if (user.login == "worker" && user.password == "worker") {
+        IO(Worker.asRight)
+      } else if (user.login == "admin" && user.password == "admin")
+        IO(Admin.asRight)
+      else {
+        IO("Invalid user".asLeft)
+      }
+    })
+  }
+
+  def loginUser: Kleisli[IO, Request[IO], Response[IO]] = Kleisli { request: Request[IO] =>
+    verifyLogin(request).flatMap {
+      case Left(error) => Forbidden(error)
+      case Right(role) => Ok("Logged in").map(_.addCookie(ResponseCookie("authcookie", role.toString)))
     }
   }
 
