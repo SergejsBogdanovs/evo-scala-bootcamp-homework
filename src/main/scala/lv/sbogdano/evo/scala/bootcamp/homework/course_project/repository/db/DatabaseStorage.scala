@@ -8,6 +8,8 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status
 
 
 class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
@@ -45,4 +47,12 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
       }
     } yield result
   }
+
+  override def getJobs(userLogin: UserLogin, status: Status): Either[String, List[StationEntity]] = ???
+
+  override def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[String, Map[UserLogin, JobSchedule]] = ???
+
+//  override def updateJobScheduleState(userLogin: UserLogin, jobSchedule: JobSchedule): Either[String, Map[UserLogin, JobSchedule]] = ???
+
+  override def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[String, Map[UserLogin, JobSchedule]] = ???
 }

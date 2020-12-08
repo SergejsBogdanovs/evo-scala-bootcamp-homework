@@ -1,52 +1,58 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages
 
+import io.circe.generic.auto._
+import io.circe.parser
+import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.Status
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.Status.Pending
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputAction._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status._
 
-sealed trait InputMessage {
-  val worker: String
-}
+import java.time.Instant
 
-object InputMessage{
 
-  case class EnterJobSchedule(worker: String, emptyJobSchedule: Map[Status, List[StationEntity]]) extends InputMessage
-  case class Help(worker: String)                                   extends InputMessage
-  case class ListJobsAll(worker: String)                            extends InputMessage
-  case class ListJobsCompleted(worker: String)                      extends InputMessage
-  case class ListJobsPending(worker: String)                        extends InputMessage
-  case class MarkJobAsCompleted(worker: String, uniqueName: String) extends InputMessage
-  case class InvalidInput(worker: String, string: String)           extends InputMessage
-  case class Disconnect(worker: String)                             extends InputMessage
+case class InputMessage private (userLogin: String, action: InputAction)
 
-  val emptyJobSchedule: Map[Status, List[StationEntity]] = Map(Pending -> List.empty)
-  val helpText: String =
-    """Commands:
-      | /help           - Show all commands
-      | /jobs           - Show all jobs
-      | /jobs completed - Show completed jobs
-      | /jobs pending   - Show pending jobs
-      | /done uniqueName - Mark job as completed
-    """.stripMargin
+object InputMessage {
 
-  def parse(worker: String, text: String): InputMessage = {
-    splitWords(text) match {
-      case ("/help", _)              => Help(worker)
-      case ("/jobs", "")             => ListJobsAll(worker)
-      case ("/jobs", "completed")    => ListJobsCompleted(worker)
-      case ("/jobs", "pending")      => ListJobsPending(worker)
-      case ("/done", s"$uniqueName") => MarkJobAsCompleted(worker, uniqueName)
-      case (s"/$cmd", "")            => InvalidInput(worker, s"unknown command - $cmd")
-      case _                         => InvalidInput(worker, "Invalid command")
-    }
-  }
+  def from(userLogin: String, text: String): InputMessage = {
 
-  private def splitWords(text: String): (String, String) = {
-    val trimmedText = text.trim
-    val space = trimmedText.indexOf(' ')
-    if (space < 0)
-      (trimmedText, "")
-    else
-      (trimmedText.substring(0, space), trimmedText.substring(space + 1).trim)
+    val stationEntity = StationEntity(
+      uniqueName = "Riga_AS130",
+      stationAddress = "Stadiona 1",
+      construction = "indoor",
+      yearOfManufacture = 2011,
+      inServiceFrom = 2020,
+      name = "AS130",
+      cityRegion = "Riga",
+      latitude = 123.45,
+      longitude = 567.89,
+      zoneOfResponsibility = "Vidzeme"
+    )
+
+    // {"time":"2020-12-08T13:08:24.229762Z","action":{"ListJobsInputAction":{"status":{"All":{}}}}}
+    //val t1 = UserAction(Instant.now, ListJobsInputAction(status = All())).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.272262Z","action":{"ListJobsInputAction":{"status":{"Pending":{}}}}}
+    //val t2 = UserAction(Instant.now, ListJobsInputAction(status = Pending())).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.316905Z","action":{"ListJobsInputAction":{"status":{"Completed":{}}}}}
+    //val t3 = UserAction(Instant.now, ListJobsInputAction(status = Completed())).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.362470Z","action":{"AddJobInputAction":{"toUser":"sergejs","stationEntities":[{"uniqueName":"Riga_AS130","stationAddress":"Stadiona 1","construction":"indoor","yearOfManufacture":2011,"inServiceFrom":2020,"name":"AS130","cityRegion":"Riga","latitude":123.45,"longitude":567.89,"zoneOfResponsibility":"Vidzeme"}]}}}
+    //val t4 = UserAction(Instant.now, AddJobInputAction("sergejs", stationEntities = List(stationEntity))).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.399354Z","action":{"MarkJobAsCompletedInputAction":{"stationEntity":{"uniqueName":"Riga_AS130","stationAddress":"Stadiona 1","construction":"indoor","yearOfManufacture":2011,"inServiceFrom":2020,"name":"AS130","cityRegion":"Riga","latitude":123.45,"longitude":567.89,"zoneOfResponsibility":"Vidzeme"}}}}
+    //val t5 = UserAction(Instant.now, MarkJobAsCompletedInputAction(stationEntity)).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.436520Z","action":{"InvalidInputInputAction":{}}}
+    //val t6 = UserAction(Instant.now, InvalidInputInputAction()).asJson.noSpaces
+
+    // {"time":"2020-12-08T13:08:24.464492Z","action":{"DisconnectInputAction":{}}}
+    //val t7 = UserAction(Instant.now, DisconnectInputAction()).asJson.noSpaces
+
+    parser.decode[UserAction](text).fold(
+      _       => InputMessage(userLogin, InvalidInputInputAction()),
+      message => InputMessage(userLogin, message.action)
+    )
   }
 }

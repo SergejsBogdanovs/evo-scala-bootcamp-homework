@@ -10,6 +10,8 @@ import org.http4s.dsl.io._
 import org.http4s.headers.`Set-Cookie`
 import org.http4s.{AuthedRequest, _}
 
+
+// TODO Use cryptobits?
 object Auth {
 
   type AuthError = String
@@ -46,14 +48,13 @@ object Auth {
 
   def inAuthFailure: AuthedRoutes[AuthError, IO] = Kleisli { request: AuthedRequest[IO, AuthError] =>
     request.req match {
-      case _ => {
+      case _ =>
         OptionT.pure[IO](Response[IO](Status.Unauthorized))
-      }
     }
   }
 
   def verifyLogin(req: Request[IO]): IO[Either[AuthError, Role]] = {
-    req.as[User].flatMap(user => {
+    req.as[User].flatMap(user =>
       if (user.login == "worker" && user.password == "worker") {
         IO(Worker.asRight)
       } else if (user.login == "admin" && user.password == "admin")
@@ -61,7 +62,7 @@ object Auth {
       else {
         IO("Invalid user".asLeft)
       }
-    })
+    )
   }
 
   def loginUser: Kleisli[IO, Request[IO], Response[IO]] = Kleisli { request: Request[IO] =>

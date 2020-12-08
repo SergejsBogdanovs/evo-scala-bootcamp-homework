@@ -3,19 +3,20 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes
 import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import cats.implicits.{catsSyntaxEitherId, toSemigroupKOps}
+import cats.implicits.toSemigroupKOps
 import fs2.concurrent.{Queue, Topic}
 import fs2.{Pipe, Stream}
 import io.circe.generic.auto._
+import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Auth.{authUser, inAuthFailure, loginUser}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.{Role, User}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, Worker}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.WorkerJobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputMessage.{Disconnect, EnterJobSchedule}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputAction.{DisconnectInputAction, EnterJobScheduleInputAction}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, UserAction}
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.io._
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
@@ -25,6 +26,8 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.{Close, Text}
 import org.http4s.{AuthedRoutes, HttpRoutes, Request, Response}
 
+import java.time.Instant
+
 
 object StationRoutes {
 
@@ -32,13 +35,13 @@ object StationRoutes {
   /**
    * define following APIS
    *   1. create station — POST api/v1/admin/stations
-   *      2. update station — PUT api/v1/admin/stations
-   *      3. delete station — DELETE api/v1/admin/stations/{id}
-   *      4. search station — GET api/v1/user/station/{name}
+   *   2. update station — PUT api/v1/admin/stations
+   *   3. delete station — DELETE api/v1/admin/stations/{id}
+   *   4. search station — GET api/v1/user/station/{name}
    */
   def routes(
               service: StationService,
-              jobsScheduleState: Ref[IO, WorkerJobsState],
+              jobsScheduleState: Ref[IO, JobsState],
               queue: Queue[IO, InputMessage],
               topic: Topic[IO, OutputMessage]
             ): HttpRoutes[IO] = {
@@ -117,49 +120,52 @@ object StationRoutes {
   }
 
   def wsRouter(
-                jobsScheduleState: Ref[IO, WorkerJobsState],
+                jobsScheduleState: Ref[IO, JobsState],
                 queue: Queue[IO, InputMessage],
                 topic: Topic[IO, OutputMessage]
               ): HttpRoutes[IO] = {
 
     HttpRoutes.of {
 
-      case GET -> Root / "ws" / workerName =>
+      //"ws://localhost:8761/api/v1/ws json" -d '{"login":"worker", "password":"worker", "role":"worker"}' -H "Content-Type: application/json"
+      case GET -> Root / "ws" / userLogin =>
 
-        // WebSocket Output messages
-        // Routes messages from "topic" to WebSocket
-        // Messages which returns to client
-        val toClient: Stream[IO, WebSocketFrame.Text] =
-          topic
-            .subscribe(1000)
-            .filter(_.forWorker(workerName))
-            .map(msg => Text(msg.toString))
+          // WebSocket Output messages
+          // Routes messages from "topic" to WebSocket
+          // Messages which returns to client
+          val toClient: Stream[IO, WebSocketFrame.Text] =
+            topic
+              .subscribe(1000)
+              .filter(_.forUser(userLogin))
+              .map(msg => Text(msg.toString))
 
 
-        //WebSocket Input messages
-        def processInput(webSocketStream: Stream[IO, WebSocketFrame]): Stream[IO, Unit] = {
+          //WebSocket Input messages
+          def processInput(webSocketStream: Stream[IO, WebSocketFrame]): Stream[IO, Unit] = {
 
-          val entryStream: Stream[IO, InputMessage] = Stream.emits(Seq(EnterJobSchedule(workerName, InputMessage.emptyJobSchedule)))
+//            val entryStream: Stream[IO, InputMessage] =
+//              Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobScheduleInputAction()).asJson.noSpaces)))
 
-          val parsedWebSocketInput: Stream[IO, InputMessage] =
-            webSocketStream.collect {
-              case Text(text, _) => InputMessage.parse(workerName, text)
-              case Close(_) => Disconnect(workerName)
-            }
+            val parsedWebSocketInput: Stream[IO, InputMessage] =
+              webSocketStream.collect {
+                case Text(text, _) => InputMessage.from(userLogin, text)
+                case Close(_)      => InputMessage(userLogin, DisconnectInputAction())
+              }
 
-          // Enqueue messages to Queue for processing
-          (entryStream ++ parsedWebSocketInput).through(queue.enqueue)
+            // Enqueue messages to Queue for processing
+            (/*entryStream ++*/ parsedWebSocketInput).through(queue.enqueue)
+          }
+
+          val inputPipe: Pipe[IO, WebSocketFrame, Unit] = processInput
+
+          WebSocketBuilder[IO].build(toClient, inputPipe)
         }
 
-        val inputPipe: Pipe[IO, WebSocketFrame, Unit] = processInput
-
-        WebSocketBuilder[IO].build(toClient, inputPipe)
     }
-  }
 
   def makeRouter(
                   storage: Storage,
-                  jobsScheduleState: Ref[IO, WorkerJobsState] = null,
+                  jobsScheduleState: Ref[IO, JobsState] = null,
                   queue: Queue[IO, InputMessage] = null,
                   topic: Topic[IO, OutputMessage] = null
                 ): Kleisli[IO, Request[IO], Response[IO]] = {

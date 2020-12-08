@@ -9,8 +9,8 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.config.{Config, Se
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.{Database, DatabaseStorage}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes.StationRoutes.makeRouter
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.WorkerJobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, SendToWorker}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, SendToUser}
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import scala.concurrent.ExecutionContext
@@ -23,8 +23,8 @@ object AppServer extends IOApp {
       transactor <- Database.transactor(config.dbConfig);
       _          <- Database.bootstrap(transactor);
       queue      <- Queue.unbounded[IO, InputMessage];
-      topic      <- Topic[IO, OutputMessage](SendToWorker("", ""));
-      ref        <- Ref.of[IO, WorkerJobsState](WorkerJobsState());
+      topic      <- Topic[IO, OutputMessage](SendToUser("", ""));
+      ref        <- Ref.of[IO, JobsState](JobsState());
       exitCode   <- {
         val httpStream = server(transactor, config.serverConfig, ref, queue, topic)
 
@@ -47,7 +47,7 @@ object AppServer extends IOApp {
   def server(
               transactor: Transactor[IO],
               serverConfig: ServerConfig,
-              jobsScheduleState: Ref[IO, WorkerJobsState],
+              jobsScheduleState: Ref[IO, JobsState],
               queue: Queue[IO, InputMessage],
               topic: Topic[IO, OutputMessage]
             ): Stream[IO, ExitCode] = {

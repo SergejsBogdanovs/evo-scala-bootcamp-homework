@@ -4,9 +4,7 @@ import cats.data.Kleisli
 import cats.effect.IO
 import cats.implicits.catsSyntaxOptionId
 import fs2.Stream
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.syntax.EncoderOps
-import io.circe.{Decoder, Encoder}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.User
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
