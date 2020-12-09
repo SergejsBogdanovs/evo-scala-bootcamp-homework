@@ -4,9 +4,9 @@ import cats.effect.IO
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{OutputMessage, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.OutputAction.{AddJobsOutputAction, ErrorOutputAction, ListJobsOutputAction, MarkJobAsCompletedOutputAction}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status
 
 class StationService(storage: Storage) {
 
@@ -20,14 +20,11 @@ class StationService(storage: Storage) {
 
 
   // JobsSchedule
-  def listJobs(userLogin: UserLogin, status: Status): Either[String, List[StationEntity]] = storage.getJobs(userLogin, status)
+  def listJobs(userLogin: UserLogin, status: Status): Either[ErrorOutputAction, ListJobsOutputAction] = storage.getJobs(userLogin, status)
 
-  def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[String, Map[UserLogin, JobSchedule]] = storage.markJobAsCompleted(userLogin, stationEntity)
+  def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[ErrorOutputAction, MarkJobAsCompletedOutputAction] = storage.markJobAsCompleted(userLogin, stationEntity)
 
-//  def updateJobScheduleState(userLogin: UserLogin, jobSchedule: JobSchedule): Either[String, Map[UserLogin, JobSchedule]] =
-//    storage.updateJobScheduleState(userLogin, jobSchedule)
-
-  def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[String, Map[UserLogin, JobSchedule]] = storage.addJobsToUser(toUser, stationEntities)
+  def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[ErrorOutputAction, AddJobsOutputAction] = storage.addJobsToUser(toUser, stationEntities)
 }
 
 object StationService {

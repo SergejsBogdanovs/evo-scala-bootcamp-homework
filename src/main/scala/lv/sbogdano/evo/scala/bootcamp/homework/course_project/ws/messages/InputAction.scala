@@ -19,7 +19,6 @@ object InputAction {
 
 object ActionGenericDerivation {
 
-
   implicit val encodeAction: Encoder[InputAction] = Encoder.instance {
     case enterJobScheduleAction @ EnterJobScheduleInputAction()      => enterJobScheduleAction.asJson
     case listJobsAction @ ListJobsInputAction(_)                     => listJobsAction.asJson
