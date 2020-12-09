@@ -15,7 +15,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputAction.{DisconnectInputAction, EnterJobScheduleInputAction}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputAction.EnterJobScheduleInputAction
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, UserAction}
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.io._
@@ -23,7 +23,7 @@ import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.websocket.WebSocketFrame
-import org.http4s.websocket.WebSocketFrame.{Close, Text}
+import org.http4s.websocket.WebSocketFrame.Text
 import org.http4s.{AuthedRoutes, HttpRoutes, Request, Response}
 
 import java.time.Instant
@@ -143,17 +143,17 @@ object StationRoutes {
           //WebSocket Input messages
           def processInput(webSocketStream: Stream[IO, WebSocketFrame]): Stream[IO, Unit] = {
 
-//            val entryStream: Stream[IO, InputMessage] =
-//              Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobScheduleInputAction()).asJson.noSpaces)))
+            val entryStream: Stream[IO, InputMessage] =
+              Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobScheduleInputAction()).asJson.noSpaces)))
 
             val parsedWebSocketInput: Stream[IO, InputMessage] =
               webSocketStream.collect {
                 case Text(text, _) => InputMessage.from(userLogin, text)
-                case Close(_)      => InputMessage(userLogin, DisconnectInputAction())
+                //case Close(_)      => InputMessage(userLogin, DisconnectInputAction())
               }
 
             // Enqueue messages to Queue for processing
-            (/*entryStream ++*/ parsedWebSocketInput).through(queue.enqueue)
+            (entryStream ++ parsedWebSocketInput).through(queue.enqueue)
           }
 
           val inputPipe: Pipe[IO, WebSocketFrame, Unit] = processInput

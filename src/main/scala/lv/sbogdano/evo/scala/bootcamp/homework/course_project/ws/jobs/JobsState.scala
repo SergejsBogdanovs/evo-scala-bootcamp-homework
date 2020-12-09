@@ -28,17 +28,8 @@ case class JobsState(service: StationService) {
 
   def process(msg: InputMessage): (JobsState, Seq[OutputMessage]) = msg.action match {
 
-    case EnterJobScheduleInputAction() => ???
-//      service.listJobs(msg.userLogin, All()) match {
-//        case Some(_) =>
-//          //(this, Seq(SendToWorker(worker, jobSchedule.toString())))
-//          //addToWorkerJobs(worker, jobSchedule)
-//          (this, sendToWorker(msg.userLogin))
-//
-//        case None =>
-//          val (finalState, message) = addToWorkerJobs(msg.userLogin, emptyJobSchedule)
-//          (finalState, Seq(WelcomeUser(msg.userLogin)) ++ message)
-//      }
+    case EnterJobScheduleInputAction() =>
+      addToUserJobs(msg.userLogin, Map(msg.userLogin -> emptyJobSchedule))
 
     case ListJobsInputAction(status) =>
       val jobs: Either[String, List[StationEntity]] = service.listJobs(msg.userLogin, status)
@@ -47,37 +38,41 @@ case class JobsState(service: StationService) {
           case Right(stations) => (this, Seq(SendToUser(msg.userLogin, stations.asJson.noSpaces)))
       }
 
-    case AddJobInputAction(toUser, stationEntities) =>
+    case AddJobsInputAction(toUser, stationEntities) =>
       service.addJobsToUser(toUser, stationEntities) match {
         case Left(error) => (this, Seq(SendToUser(toUser, error)))
-        case Right(jobs) => addToWorkerJobs(msg.userLogin, jobs)
+        case Right(jobs) => addToUserJobs(msg.userLogin, jobs)
       }
 
     case MarkJobAsCompletedInputAction(stationEntity) =>
       service.markJobAsCompleted(msg.userLogin, stationEntity) match {
         case Left(error) => (this, Seq(SendToUser(msg.userLogin, error)))
-        case Right(jobs) => addToWorkerJobs(msg.userLogin, jobs)
+        case Right(jobs) => addToUserJobs(msg.userLogin, jobs)
       }
 
     case InvalidInputInputAction() =>
       (this, Seq(SendToUser(msg.userLogin, "Invalid input")))
 
-    case DisconnectInputAction() => ???
-
   }
 
-  private def addToWorkerJobs(userLogin: UserLogin, jobs: Map[UserLogin, JobSchedule]): (JobsState, Seq[OutputMessage]) = {
-    val nextState = JobsState(StationService(CacheStorage(jobs)))
-    (nextState, Seq(SendToUser(userLogin, jobs.toString()))) //TODO make jobs.asJson.noSpaces
+  private def addToUserJobs(userLogin: UserLogin, jobs: Map[UserLogin, JobSchedule]): (JobsState, Seq[OutputMessage]) = {
+    jobs.get(userLogin) match {
+      case Some(jobSchedule) =>
+        val nextState = JobsState(StationService(CacheStorage(jobs)))
+
+        if (jobSchedule == emptyJobSchedule)
+          (nextState, Seq(WelcomeUser(userLogin)))
+        else
+          (nextState, Seq(SendToUser(userLogin, jobs.toString()))) //TODO make jobs.asJson.noSpaces
+
+      case None => (this, Seq(SendToUser(userLogin, "Can not find any jobs")))
+    }
   }
 
-//  private def sendToWorker(userLogin: UserLogin): Seq[OutputMessage] =
-//    jobs.get(userLogin)
-//      .map { jobs: JobSchedule =>
-//        jobs.get(Pending()) match {
-//          case Some(jobs) => if (jobs.isEmpty) SendToUser(userLogin, "You have no jobs for today") else SendToUser(userLogin, s"Jobs for today: $jobs")
-//          case None => SendToUser(userLogin, "You have no jobs for today")
-//        }
-//      }.toSeq
+  private def welcomeUser(userLogin: UserLogin, stations: List[StationEntity]): Seq[OutputMessage] =
+    if (stations.isEmpty)
+      Seq(SendToUser(userLogin, "You have no jobs for today"))
+    else
+      Seq(SendToUser(userLogin, s"Jobs for today: $stations"))
 }
 

@@ -64,8 +64,8 @@ class CacheStorage(jobs: Map[UserLogin, JobSchedule], var stations: List[Station
 
         val jobs = status match {
           case Completed() => completedJobs
-          case Pending() => pendingJobs
-          case All() => completedJobs ++ pendingJobs
+          case Pending()   => pendingJobs
+          case All()       => completedJobs ++ pendingJobs
         }
 
         if (jobs.isEmpty) {
@@ -98,7 +98,7 @@ class CacheStorage(jobs: Map[UserLogin, JobSchedule], var stations: List[Station
           case None => "Can not find any pending jobs".asLeft
         }
 
-      case None => s"Can not find worker $userLogin".asLeft
+      case None => s"Can not find user: $userLogin".asLeft
 
     }
   }
@@ -109,7 +109,9 @@ class CacheStorage(jobs: Map[UserLogin, JobSchedule], var stations: List[Station
 
   override def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[String, Map[UserLogin, JobSchedule]] =
     jobs.get(toUser) match {
-      case Some(jobSchedule) => Try(jobs + (toUser -> (jobSchedule ++ Map(Pending() -> stationEntities)))).toEither.leftMap(_ => "Error adding new jobs to job schedule")
+      case Some(jobSchedule) =>
+        val newJobSchedule = jobSchedule.flatMap { case (status, stations) => Map(status -> (stations ++ stationEntities)) }
+        Try(jobs + (toUser -> newJobSchedule)).toEither.leftMap(_ => "Error adding new jobs to job schedule")
       case None              =>
         val js: JobSchedule = Map(Pending() -> stationEntities)
         Try(jobs + (toUser -> js)).toEither.leftMap(_ => "Error adding new jobs to job schedule")
