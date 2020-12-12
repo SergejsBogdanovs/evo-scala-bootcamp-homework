@@ -6,7 +6,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationSer
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.{UserJobSchedule, _}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, SendToUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -94,9 +94,9 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     val findJobsByUser: InputMessage = InputMessage(userLogin, FindJobsByUser)
     val findJobsByUserAndStatus: InputMessage = InputMessage(userLogin, FindJobsByUserAndStatus(Pending))
 
-    val welcomeUser: OutputMessage = SendToUser(userLogin, WelcomeUser(s"Welcome, ${userLogin.capitalize}! Today is another great day for work."))
-    val findJobsError: OutputMessage = SendToUser(userLogin, FindJobsError("Can not find any jobs"))
-    val userJobSchedule: OutputMessage = SendToUser(userLogin, UserJobSchedule(List(job1, job2)))
+    val welcomeUser: OutputMessage = OutputMessage(userLogin, WelcomeUser(s"Welcome, ${userLogin.capitalize}! Today is another great day for work."))
+    val findJobsError: OutputMessage = OutputMessage(userLogin, FindJobsError("Can not find any jobs"))
+    val userJobSchedule: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1, job2)))
   }
 }
 

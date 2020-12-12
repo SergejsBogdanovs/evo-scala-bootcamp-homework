@@ -31,19 +31,19 @@ case class JobsState(service: StationService) {
 
     case FindJobsByUser =>
       service.findJobsByUser(msg.userLogin) match {
-        case Left(errorOutputAction) => (this, Seq(SendToUser(msg.userLogin, errorOutputAction)))
-        case Right(listUserJobs)     => (this, Seq(SendToUser(msg.userLogin, listUserJobs)))
+        case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
+        case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case FindJobsByUserAndStatus(status) =>
       service.findJobsByUserAndStatus(msg.userLogin, status) match {
-        case Left(errorOutputAction) => (this, Seq(SendToUser(msg.userLogin, errorOutputAction)))
-        case Right(listUserJobs)     => (this, Seq(SendToUser(msg.userLogin, listUserJobs)))
+        case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
+        case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case AddJobToSchedule(job) =>
       service.addJobToSchedule(job) match {
-        case Left(error)         => (this, Seq(SendToUser(msg.userLogin, error)))
+        case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
             userLogin = msg.userLogin,
@@ -54,7 +54,7 @@ case class JobsState(service: StationService) {
 
     case UpdateJobStatus(jobId, status) =>
       service.updateJobStatus(msg.userLogin, jobId, status) match {
-        case Left(error)         => (this, Seq(SendToUser(msg.userLogin, error)))
+        case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
             userLogin = msg.userLogin,
@@ -65,7 +65,7 @@ case class JobsState(service: StationService) {
 
     case UpdateJobPriority(jobId, priority) =>
       service.updateJobPriority(msg.userLogin, jobId, priority) match {
-        case Left(error)         => (this, Seq(SendToUser(msg.userLogin, error)))
+        case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
             userLogin = msg.userLogin,
@@ -76,7 +76,7 @@ case class JobsState(service: StationService) {
 
     case DeleteJobFromSchedule(job) =>
       service.deleteJobFroSchedule(job) match {
-        case Left(error)         => (this, Seq(SendToUser(msg.userLogin, error)))
+        case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>           updateState(
           userLogin = msg.userLogin,
           jobSchedule = outputAction.jobSchedule,
@@ -120,14 +120,14 @@ case class JobsState(service: StationService) {
 //      }
 
     case InvalidInput =>
-      (this, Seq(SendToUser(msg.userLogin, InvalidInputError("Invalid input"))))
+      (this, Seq(OutputMessage(msg.userLogin, InvalidInputError("Invalid input"))))
 
   }
 
 
   private def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
     val nextState = JobsState(StationService(CacheStorage(jobSchedule)))
-    (nextState, Seq(SendToUser(userLogin, outputAction)))
+    (nextState, Seq(OutputMessage(userLogin, outputAction)))
   }
 
 //  private def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): (JobsState, Seq[OutputMessage]) = {

@@ -11,7 +11,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.{Dat
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes.StationRoutes.makeRouter
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.WelcomeUser
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, SendToUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import scala.concurrent.ExecutionContext
@@ -24,7 +24,7 @@ object AppServer extends IOApp {
       transactor <- Database.transactor(config.dbConfig);
       _          <- Database.bootstrap(transactor);
       queue      <- Queue.unbounded[IO, InputMessage];
-      topic      <- Topic[IO, OutputMessage](SendToUser("", WelcomeUser("")));
+      topic      <- Topic[IO, OutputMessage](OutputMessage("", WelcomeUser("")));
       ref        <- Ref.of[IO, JobsState](JobsState());
       exitCode   <- {
         val httpStream = server(transactor, config.serverConfig, ref, queue, topic)
