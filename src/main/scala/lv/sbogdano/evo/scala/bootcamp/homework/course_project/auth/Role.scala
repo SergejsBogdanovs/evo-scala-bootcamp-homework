@@ -10,4 +10,4 @@ object Role {
   }
 }
 
-case class User(login: String, password: String, role: String)
+case class User(login: String, password: String)

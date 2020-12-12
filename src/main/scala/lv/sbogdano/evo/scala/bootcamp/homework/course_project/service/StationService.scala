@@ -5,10 +5,12 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.OutputAction.{AddJobsOutputAction, ErrorOutputAction, ListJobsOutputAction, MarkJobAsCompletedOutputAction}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.UserJobSchedule
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
 
 class StationService(storage: Storage) {
+
 
   def createStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]] = storage.createStation(stationEntity)
 
@@ -20,11 +22,18 @@ class StationService(storage: Storage) {
 
 
   // JobsSchedule
-  def listJobs(userLogin: UserLogin, status: Status): Either[ErrorOutputAction, ListJobsOutputAction] = storage.getJobs(userLogin, status)
 
-  def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[ErrorOutputAction, MarkJobAsCompletedOutputAction] = storage.markJobAsCompleted(userLogin, stationEntity)
+  def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = storage.findJobsByUser(userLogin)
 
-  def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[ErrorOutputAction, AddJobsOutputAction] = storage.addJobsToUser(toUser, stationEntities)
+  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = storage.findJobsByUserAndStatus(userLogin, status)
+
+  def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = storage.addJobToSchedule(job)
+
+  def updateJobStatus(userLogin: UserLogin, jobId: Long, status: Status): Either[OutputActionError, UserJobSchedule] = storage.updateJobStatus(userLogin, jobId, status)
+
+  def updateJobPriority(userLogin: UserLogin, jobId: Long, priority: Priority): Either[OutputActionError, UserJobSchedule] = storage.updateJobPriority(userLogin, jobId, priority)
+
+  def deleteJobFroSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = storage.deleteJobFromSchedule(job)
 }
 
 object StationService {

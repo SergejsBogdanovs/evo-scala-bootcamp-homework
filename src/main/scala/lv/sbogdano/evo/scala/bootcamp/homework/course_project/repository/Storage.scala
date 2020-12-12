@@ -3,9 +3,10 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository
 import cats.effect.IO
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.OutputAction.{AddJobsOutputAction, ErrorOutputAction, ListJobsOutputAction, MarkJobAsCompletedOutputAction}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.UserJobSchedule
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
 
 trait Storage {
 
@@ -19,9 +20,16 @@ trait Storage {
   def deleteStation(uniqueName: String): IO[Either[RepositoryOpsError, String]]
 
 
-  def getJobs(userLogin: UserLogin, status: Status): Either[ErrorOutputAction, ListJobsOutputAction]
 
-  def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[ErrorOutputAction, MarkJobAsCompletedOutputAction]
+  def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule]
 
-  def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[ErrorOutputAction, AddJobsOutputAction]
+  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule]
+
+  def updateJobStatus(userLogin: UserLogin, jobId: Long, status: Status): Either[OutputActionError, UserJobSchedule]
+
+  def updateJobPriority(userLogin: UserLogin, jobId: Long, priority: Priority): Either[OutputActionError, UserJobSchedule]
+
+  def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule]
+
+  def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule]
 }

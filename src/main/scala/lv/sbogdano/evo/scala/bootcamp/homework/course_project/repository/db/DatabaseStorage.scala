@@ -8,9 +8,10 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.OutputAction.{AddJobsOutputAction, ErrorOutputAction, ListJobsOutputAction, MarkJobAsCompletedOutputAction}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.Status
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.UserJobSchedule
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
 
 
 class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
@@ -49,9 +50,15 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
     } yield result
   }
 
-  override def getJobs(userLogin: UserLogin, status: Status): Either[ErrorOutputAction, ListJobsOutputAction] = ???
+  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = ???
 
-  override def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[ErrorOutputAction, MarkJobAsCompletedOutputAction] = ???
+  override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = ???
 
-  override def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[ErrorOutputAction, AddJobsOutputAction] = ???
+  override def updateJobPriority(userLogin: UserLogin, jobId: Long, priority: Priority): Either[OutputActionError, UserJobSchedule] = ???
+
+  override def updateJobStatus(userLogin: UserLogin, jobId: Long, status: Status): Either[OutputActionError, UserJobSchedule] = ???
+
+  override def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = ???
+
+  override def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = ???
 }

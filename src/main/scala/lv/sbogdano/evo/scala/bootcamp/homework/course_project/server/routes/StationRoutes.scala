@@ -15,8 +15,9 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.InputAction.EnterJobScheduleInputAction
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage, UserAction}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction.EnterJobSchedule
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.UserAction
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.io._
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
@@ -68,8 +69,8 @@ object StationRoutes {
           case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
               service.createStation(stationEntity).flatMap {
-                case Right(stationEntity) => Created(stationEntity)
-                case Left(message) => BadRequest(message)
+                case Right(stationEntity) => Created(stationEntity.asJson)
+                case Left(message) => BadRequest(message.asJson)
               }
             }
         }
@@ -82,8 +83,8 @@ object StationRoutes {
           case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
               service.updateStation(stationEntity).flatMap {
-                case Right(stationEntity) => Ok(stationEntity)
-                case Left(message) => NotFound(message)
+                case Right(stationEntity) => Ok(stationEntity.asJson)
+                case Left(message) => NotFound(message.asJson)
               }
             }
         }
@@ -95,16 +96,16 @@ object StationRoutes {
 
           case Admin =>
             service.deleteStation(uniqueName).flatMap {
-              case Right(uniqueName) => Ok(uniqueName)
-              case Left(message) => NotFound(message)
+              case Right(uniqueName) => Ok(uniqueName.asJson)
+              case Left(error)       => NotFound(error.asJson)
             }
         }
 
       // curl localhost:8761/api/v1/user/stations/as130
       case GET -> Root / "user" / "stations" / name as role =>
         service.filterStations(name).flatMap {
-          case Right(stationEntities) => Ok(stationEntities)
-          case Left(message) => NotFound(message)
+          case Right(stationEntities) => Ok(stationEntities.asJson)
+          case Left(message) => NotFound(message.asJson)
         }
     }
   }
@@ -144,7 +145,7 @@ object StationRoutes {
           def processInput(webSocketStream: Stream[IO, WebSocketFrame]): Stream[IO, Unit] = {
 
             val entryStream: Stream[IO, InputMessage] =
-              Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobScheduleInputAction()).asJson.noSpaces)))
+              Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobSchedule).asJson.noSpaces)))
 
             val parsedWebSocketInput: Stream[IO, InputMessage] =
               webSocketStream.collect {
