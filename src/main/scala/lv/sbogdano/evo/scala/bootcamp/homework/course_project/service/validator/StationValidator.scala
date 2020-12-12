@@ -6,8 +6,6 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto._
 
 object StationValidator {
 
-  type ErrorMessage = String
-
   type AllErrorsOr[A] = ValidatedNec[ValidationError, A]
 
   private def validateStationAddress(streetName: String, streetNumber: String): AllErrorsOr[StationAddress] = {
