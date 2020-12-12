@@ -14,8 +14,8 @@ object InputAction {
   case object FindJobsByUser extends InputAction
   case class FindJobsByUserAndStatus(status: Status) extends InputAction
   case class AddJobToSchedule(job: Job) extends InputAction
-  case class UpdateJobStatus(jobId: Long, status: Status) extends InputAction
-  case class UpdateJobPriority(jobId: Long, priority: Priority) extends InputAction
+  case class UpdateJobStatus(jobId: Long, newStatus: Status) extends InputAction
+  case class UpdateJobPriority(jobId: Long, newPriority: Priority) extends InputAction
   case class DeleteJobFromSchedule(job: Job) extends InputAction
   case object InvalidInput extends InputAction
 }

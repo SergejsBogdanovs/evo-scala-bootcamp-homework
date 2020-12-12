@@ -57,7 +57,6 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     }
   }
 
-
   override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = {
     val userJobs: JobSchedule = jobsSchedule.filter(job => job.userLogin == userLogin && job.status == status)
     if (userJobs.isEmpty) {
@@ -67,31 +66,37 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     }
   }
 
-  override def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = {
-    jobsSchedule.find(userJob => userJob.userLogin == job.userLogin && userJob.station == job.station) match {
+  override def addJobToSchedule(jobToAdd: Job): Either[OutputActionError, UserJobSchedule] = {
+    jobsSchedule.find(userJob => userJob.userLogin == jobToAdd.userLogin && userJob.station == jobToAdd.station) match {
       case Some(_) => AddJobError("Already exist").asLeft
-      case None    => UserJobSchedule(jobsSchedule :+ job).asRight // TODO sort by priority
+      case None    => UserJobSchedule(jobsSchedule :+ jobToAdd).asRight // TODO sort by priority
     }
   }
 
   override def updateJobStatus(userLogin: UserLogin, jobId: Long, newStatus: Status): Either[OutputActionError, UserJobSchedule] = {
-    Try(jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(status = newStatus) else job)) match {
-      case Failure(_)    => UpdateJobError("Error during update job status").asLeft
-      case Success(jobs) => UserJobSchedule(jobs).asRight // TODO sort by priority
+    jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
+      case Some(_) =>
+        val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(status = newStatus) else job)
+        UserJobSchedule(updated).asRight
+
+      case None    => UpdateJobError("Couldn't find job to update status by provided user and/or job id").asLeft
     }
   }
 
   override def updateJobPriority(userLogin: UserLogin, jobId: Long, newPriority: Priority): Either[OutputActionError, UserJobSchedule] = {
-    Try(jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(priority = newPriority) else job)) match {
-      case Failure(_)    => UpdateJobError("Error during update job priority").asLeft
-      case Success(jobs) => UserJobSchedule(jobs).asRight // TODO sort by priority
+    jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
+      case Some(_) =>
+        val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(priority = newPriority) else job)
+        UserJobSchedule(updated).asRight
+
+      case None    => UpdateJobError("Couldn't find job to update priority by provided user and/or job id").asLeft
     }
   }
 
   override def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = {
-    Try(jobsSchedule.filter(_ != job)) match {
-      case Failure(_)    => DeleteJobError("Error during update job priority").asLeft
-      case Success(jobs) => UserJobSchedule(jobs).asRight
+    jobsSchedule.find(_ == job) match {
+      case Some(_) => UserJobSchedule(jobsSchedule.filter(_ != job)).asRight
+      case None    => DeleteJobError("Couldn't find job to delete").asLeft
     }
   }
 
