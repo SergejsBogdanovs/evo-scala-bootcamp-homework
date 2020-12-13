@@ -53,7 +53,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
   }
 
   "JobState process UpdateJobPriority input message" should "return Seq(UserJobSchedule) with updated priority as output message" in new Scope {
-    jobsStateFull.process(updateJobStatus)._2 shouldBe Seq(userJobScheduleUpdatedStatus)
+    jobsStateFull.process(updateJobPriority)._2 shouldBe Seq(userJobScheduleUpdatedPriority)
   }
 
   "JobState process UpdateJobPriority input message" should "return Seq(UpdateJobError) when user not found" in new Scope {
@@ -161,15 +161,16 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
 
     val welcomeUser: OutputMessage = OutputMessage(userLogin, WelcomeUser(s"Welcome, ${userLogin.capitalize}! Today is another great day for work."))
     val findJobsError: OutputMessage = OutputMessage(userLogin, FindJobsError("Can not find any jobs"))
-    val userJobSchedule: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1, job2)))
-    val userJobScheduleAdd: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1, job2, job3, job4)))
-    val userJobScheduleUpdatedStatus: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1.copy(status = Completed), job2, job3)))
+    val userJobSchedule: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1, job2).sorted))
+    val userJobScheduleAdd: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1, job2, job3, job4).sorted))
+    val userJobScheduleUpdatedStatus: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1.copy(status = Completed), job2, job3).sorted))
+    val userJobScheduleUpdatedPriority: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1.copy(priority = High()), job2, job3).sorted))
     val addJobError: OutputMessage = OutputMessage(userLogin, AddJobError("Already exist"))
     val updateJobStatusInvalidUserError: OutputMessage = OutputMessage(invalidLogin, UpdateJobError("Couldn't find job to update status by provided user and/or job id"))
     val updateJobStatusInvalidJobIdError: OutputMessage = OutputMessage(userLogin, UpdateJobError("Couldn't find job to update status by provided user and/or job id"))
     val updateJobPriorityInvalidUserError: OutputMessage = OutputMessage(invalidLogin, UpdateJobError("Couldn't find job to update priority by provided user and/or job id"))
     val updateJobPriorityInvalidJobIdError: OutputMessage = OutputMessage(userLogin, UpdateJobError("Couldn't find job to update priority by provided user and/or job id"))
-    val deleteJobResult: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job2, job3)))
+    val deleteJobResult: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job2, job3).sorted))
     val deleteJobError: OutputMessage = OutputMessage(userLogin, DeleteJobError("Couldn't find job to delete"))
     val invalidInputError: OutputMessage = OutputMessage(userLogin, InvalidInputError("Invalid input"))
   }

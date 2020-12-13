@@ -53,7 +53,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     if (userJobs.isEmpty) {
       FindJobsError("Can not find any jobs").asLeft
     } else {
-      UserJobSchedule(userJobs).asRight
+      UserJobSchedule(userJobs.sorted).asRight
     }
   }
 
@@ -62,14 +62,14 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     if (userJobs.isEmpty) {
       FindJobsError("Can not find any jobs").asLeft
     } else {
-      UserJobSchedule(userJobs).asRight
+      UserJobSchedule(userJobs.sorted).asRight
     }
   }
 
   override def addJobToSchedule(jobToAdd: Job): Either[OutputActionError, UserJobSchedule] = {
     jobsSchedule.find(userJob => userJob.userLogin == jobToAdd.userLogin && userJob.station == jobToAdd.station) match {
       case Some(_) => AddJobError("Already exist").asLeft
-      case None    => UserJobSchedule(jobsSchedule :+ jobToAdd).asRight // TODO sort by priority
+      case None    => UserJobSchedule((jobsSchedule :+ jobToAdd).sorted).asRight // TODO sort by priority
     }
   }
 
@@ -77,7 +77,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
       case Some(_) =>
         val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(status = newStatus) else job)
-        UserJobSchedule(updated).asRight
+        UserJobSchedule(updated.sorted).asRight
 
       case None    => UpdateJobError("Couldn't find job to update status by provided user and/or job id").asLeft
     }
@@ -87,7 +87,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
       case Some(_) =>
         val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(priority = newPriority) else job)
-        UserJobSchedule(updated).asRight
+        UserJobSchedule(updated.sorted).asRight
 
       case None    => UpdateJobError("Couldn't find job to update priority by provided user and/or job id").asLeft
     }
@@ -95,7 +95,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
 
   override def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = {
     jobsSchedule.find(_ == job) match {
-      case Some(_) => UserJobSchedule(jobsSchedule.filter(_ != job)).asRight
+      case Some(_) => UserJobSchedule(jobsSchedule.filter(_ != job).sorted).asRight
       case None    => DeleteJobError("Couldn't find job to delete").asLeft
     }
   }

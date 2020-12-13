@@ -9,3 +9,9 @@ case class Job(
               priority: Priority,
               station: StationEntity
               )
+
+object Job {
+  implicit val orderingJob: Ordering[Job] = Ordering.fromLessThan {
+    (job1: Job, job2: Job) => job1.priority.value < job2.priority.value
+  }
+}
