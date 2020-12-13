@@ -65,13 +65,7 @@ class CacheStorageSpec extends AnyFlatSpec with Matchers {
   trait Scope {
 
     val storage: CacheStorage = CacheStorage()
-    //val service: Service = Service(storage)
 
-    // TODO make authentication
-    // TODO correct types for years, locations, id
-    // TODO add websocket (at least empty, then will add routes)
-    // TODO write tests on input verification
-    // TODO write scheduling functionality
     val stationMock: StationEntity = StationEntity(
       uniqueName = "Riga_AS130",
       stationAddress = "Stadiona 1",

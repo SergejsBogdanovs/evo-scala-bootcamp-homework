@@ -38,7 +38,6 @@ class StationValidatorSpec extends AnyFlatSpec with Matchers {
     ).validNec
   }
 
-  // TODO rewrite
   it should "contain StreetNameInvalidFormat when invalid streetName provided" in new Scope {
 
     checkInvalid(

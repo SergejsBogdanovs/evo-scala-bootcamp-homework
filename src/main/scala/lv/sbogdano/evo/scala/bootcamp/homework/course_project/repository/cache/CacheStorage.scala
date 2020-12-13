@@ -12,8 +12,6 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError.{AddJobError, DeleteJobError, FindJobsError, UpdateJobError}
 
-import scala.util.{Failure, Success, Try}
-
 // TODO maybe ExpiringCache jobSchedule?
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
 
@@ -69,7 +67,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
   override def addJobToSchedule(jobToAdd: Job): Either[OutputActionError, UserJobSchedule] = {
     jobsSchedule.find(userJob => userJob.userLogin == jobToAdd.userLogin && userJob.station == jobToAdd.station) match {
       case Some(_) => AddJobError("Already exist").asLeft
-      case None    => UserJobSchedule((jobsSchedule :+ jobToAdd).sorted).asRight // TODO sort by priority
+      case None    => UserJobSchedule((jobsSchedule :+ jobToAdd).sorted).asRight
     }
   }
 

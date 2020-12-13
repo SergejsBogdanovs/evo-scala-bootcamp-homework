@@ -70,8 +70,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
 
-
-"org.tpolecat" %% "doobie-core" % doobieVersion,
+  "org.tpolecat" %% "doobie-core" % doobieVersion,
   "org.tpolecat" %% "doobie-h2" % doobieVersion,
   "org.tpolecat" %% "doobie-hikari" % doobieVersion,
   "org.tpolecat" %% "atto-core" % "0.8.0",
@@ -90,11 +89,10 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.200",
   "mysql" % "mysql-connector-java" % "8.0.22",
 
-
   "co.fs2" %% "fs2-core" % fs2Version,
   "co.fs2" %% "fs2-io" % fs2Version,
 
-  "io.github.jmcardon" %% "tsec-http4s" % tsecV
+  "org.reactormonk" %% "cryptobits" % "1.3"
 )
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)

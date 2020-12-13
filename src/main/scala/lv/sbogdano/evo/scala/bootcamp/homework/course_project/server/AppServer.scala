@@ -37,7 +37,7 @@ object AppServer extends IOApp {
         val processingStream =
           queue
             .dequeue
-            .evalMap(msg => ref.modify(_.process(msg)))
+            .evalMap(inputMessage => ref.modify(_.process(inputMessage)))
             .flatMap(Stream.emits)
             .through(topic.publish)
 

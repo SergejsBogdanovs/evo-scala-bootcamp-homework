@@ -7,7 +7,6 @@ import io.circe.{Decoder, Encoder}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction._
 
-// TODO delete inputAction from Names
 sealed trait InputAction
 object InputAction {
   case object EnterJobSchedule extends InputAction
