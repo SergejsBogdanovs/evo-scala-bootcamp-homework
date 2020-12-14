@@ -24,10 +24,14 @@ case class JobsState(service: StationService) {
   def process(msg: InputMessage): (JobsState, Seq[OutputMessage]) = msg.action match {
 
     case EnterJobSchedule =>
-      updateState(
-        userLogin = msg.userLogin,
-        outputAction = WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work.")
-      )
+      service.findJobsByUser(msg.userLogin) match {
+        case Left(_) =>
+          updateState(
+            userLogin = msg.userLogin,
+            outputAction = WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work.")
+          )
+        case Right(value) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome ${msg.userLogin}, jobs for today ${value.jobSchedule}"))))
+      }
 
     case FindJobsByUser =>
       service.findJobsByUser(msg.userLogin) match {

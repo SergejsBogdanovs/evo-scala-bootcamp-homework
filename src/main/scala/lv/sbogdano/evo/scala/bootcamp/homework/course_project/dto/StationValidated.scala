@@ -14,7 +14,7 @@ case class StationValidated(
                              zoneOfResponsibility: ZoneOfResponsibility
                             ) {
   def toStationEntity: StationEntity = StationEntity(
-    s"${this.cityRegion.toString}_${name.toString}",
+    s"${this.cityRegion.toString}_${this.name.toString}",
     this.stationAddress.toString,
     this.construction.toString,
     this.yearOfManufacture.year,

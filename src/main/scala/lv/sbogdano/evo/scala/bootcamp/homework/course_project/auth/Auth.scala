@@ -2,21 +2,19 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth
 
 import cats.data._
 import cats.effect.IO
-import cats.implicits.catsSyntaxEitherId
+import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.AuthResponse.{AuthResponseError, AuthResponseSuccess}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, Worker}
 import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
 import org.http4s.dsl.io._
-import org.http4s.headers.`Set-Cookie`
 import org.http4s.{AuthedRequest, _}
 import org.reactormonk.{CryptoBits, PrivateKey}
 
 import java.time.Clock
 
 
-// TODO Use cryptobits?
 object Auth {
 
   type Id = String
@@ -31,10 +29,11 @@ object Auth {
   )
 
   def getAuthUser(token: Option[String]): IO[Either[AuthResponseError, Role]] = IO {
-    token match {
-      case None       => AuthResponseError("Couldn't find the user by given token").asLeft
-      case Some(role) => users.get(role).toRight(AuthResponseError("Couldn't find role for this user"))
-    }
+//    token match {
+//      case None       => AuthResponseError("Couldn't find the user by given token").asLeft
+//      case Some(role) => users.get(role).toRight(AuthResponseError("Couldn't find role for this user"))
+//    }
+    users.get("admin").toRight(AuthResponseError("Couldn't find role for this user"))
   }
 
   def authUser: Kleisli[IO, Request[IO], Either[AuthResponseError, Role]] = Kleisli { request: Request[IO] =>
@@ -68,7 +67,8 @@ object Auth {
       case Left(error) => Forbidden(error.asJson)
       case Right(role) =>
         val message = crypto.signToken(role.toString, clock.millis.toString)
-        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", message)))
+//        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", message)))
+        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", role.toString)))
     }
   }
 

@@ -11,9 +11,8 @@ object StationQuery {
          |""".update
   }
 
-  def createTable = {
-    sql"""
-         |CREATE TABLE IF NOT EXISTS stations (
+  val createTableStations = {
+    """CREATE TABLE IF NOT EXISTS stations (
          |  uniqueName VARCHAR(100) PRIMARY KEY,
          |  stationAddress VARCHAR(100),
          |  construction VARCHAR(100),
@@ -23,11 +22,17 @@ object StationQuery {
          |  cityRegion VARCHAR(100),
          |  latitude NUMERIC,
          |  longitude NUMERIC,
-         |  zoneOfResponsibility VARCHAR(100)
-         |  )
-       """.stripMargin
-      .update
+         |  zoneOfResponsibility VARCHAR(100));""".stripMargin
   }
+
+  val createTableSchedule =
+    """CREATE TABLE IF NOT EXISTS schedule (
+         |  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+         |  userLogin VARCHAR(100),
+         |  status VARCHAR(100),
+         |  priority VARCHAR(100),
+         |  stationUniqueName VARCHAR(100),
+         |  FOREIGN KEY (stationUniqueName) REFERENCES stations(uniqueName));""".stripMargin
 
   // insert query
   def insert(stationEntity: StationEntity): doobie.Update0 = {

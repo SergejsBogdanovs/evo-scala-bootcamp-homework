@@ -13,9 +13,10 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, Worker}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction.EnterJobSchedule
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction.{AddJobToSchedule, EnterJobSchedule}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.UserAction
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.circe.CirceEntityCodec._
@@ -31,7 +32,6 @@ import java.time.Instant
 
 
 object StationRoutes {
-
 
   /**
    * define following APIS
@@ -49,17 +49,21 @@ object StationRoutes {
 
 
     loginRoutes <+>
-      wsRouter(jobsScheduleState, queue, topic) <+>
-        authMiddleware.apply(adminRoutes(service))
+      wsRouter(service, jobsScheduleState, queue, topic) <+>
+        authMiddleware.apply(authedRoutes(service, jobsScheduleState, queue, topic))
   }
 
   def authMiddleware: AuthMiddleware[IO, Role] = AuthMiddleware(authUser, inAuthFailure)
   //def loginMiddleware: AuthMiddleware[IO, User] = AuthMiddleware(loginUser, inAuthFailure)
 
-  def adminRoutes(service: StationService): AuthedRoutes[Role, IO] = {
+  def authedRoutes(
+                    service: StationService,
+                    jobsScheduleState: Ref[IO, JobsState],
+                    queue: Queue[IO, InputMessage],
+                    topic: Topic[IO, OutputMessage]
+                  ): AuthedRoutes[Role, IO] = {
 
     AuthedRoutes.of {
-
 
       // curl -X POST "localhost:8761/api/v1/admin/stations" -H "Content-Type: application/json" -d '{"uniqueName": "Riga_AS130","stationAddress": "Dammes 6","construction": "construction","yearOfManufacture": 2010,"inServiceFrom": 2011,"name": "as130","cityRegion": "Riga","latitude": 123.45,"longitude": "45.6123","zoneOfResponsibility": "latgale"}'
       case req@POST -> Root / "admin" / "stations" as role =>
@@ -97,7 +101,7 @@ object StationRoutes {
           case Admin =>
             service.deleteStation(uniqueName).flatMap {
               case Right(uniqueName) => Ok(uniqueName.asJson)
-              case Left(error)       => NotFound(error.asJson)
+              case Left(error) => NotFound(error.asJson)
             }
         }
 
@@ -107,26 +111,79 @@ object StationRoutes {
           case Right(stationEntities) => Ok(stationEntities.asJson)
           case Left(message) => NotFound(message.asJson)
         }
-    }
-  }
 
+
+//      case req@POST -> Root / "admin" / schedule as role =>
+//        role match {
+//          case Admin => req.req.as[Job].flatMap { job =>
+//            service.addJobToSchedule(job) match {
+//              case Left(error) => NotFound(error.asJson)
+//              case Right(outputAction) => Ok(outputAction.jobSchedule.asJson)
+//            }
+//          }
+//          case Worker => IO(Response(Unauthorized))
+//        }
+    }
+
+
+//      //WebSocket
+//      case GET -> Root / "ws" / userLogin as role =>
+//
+//        // WebSocket Output messages
+//        // Routes messages from "topic" to WebSocket
+//        // Messages which returns to client
+//        val toClient: Stream[IO, WebSocketFrame.Text] =
+//          topic
+//            .subscribe(1000)
+//            .filter(_.forUser(userLogin))
+//            .map(outputMessage => Text(outputMessage.toString))
+//
+//
+//        //WebSocket Input messages
+//        def processInput(webSocketStream: Stream[IO, WebSocketFrame]): Stream[IO, Unit] = {
+//
+//          val entryStream: Stream[IO, InputMessage] =
+//            Stream.emits(Seq(InputMessage.from(userLogin, UserAction(Instant.now(), EnterJobSchedule).asJson.noSpaces)))
+//
+//          val parsedWebSocketInput: Stream[IO, InputMessage] =
+//            webSocketStream.collect {
+//              case Text(text, _) => InputMessage.from(userLogin, text)
+//              //case Close(_)      => InputMessage(userLogin, DisconnectInputAction())
+//            }
+//
+//          // Enqueue messages to Queue for processing
+//          (entryStream ++ parsedWebSocketInput).through(queue.enqueue)
+//        }
+//
+//        val inputPipe: Pipe[IO, WebSocketFrame, Unit] = processInput
+//
+//        WebSocketBuilder[IO].build(toClient, inputPipe)
+//    }
+
+  }
 
   def loginRoutes: HttpRoutes[IO] = {
     HttpRoutes.of {
 
-      // curl -XPOST "localhost:8761/api/v1/login json" -d '{"name":"worker", "password":"worker", "role":"worker"}' -H "Content-Type: application/json"
+      // curl -XPOST "localhost:8761/api/v1/login json" -d '{"name":"worker", "password":"worker"}' -H "Content-Type: application/json"
       case req @ POST -> Root / "login" =>
         loginUser(req)
     }
   }
 
   def wsRouter(
-                jobsScheduleState: Ref[IO, JobsState],
-                queue: Queue[IO, InputMessage],
-                topic: Topic[IO, OutputMessage]
+              service: StationService,
+              jobsScheduleState: Ref[IO, JobsState],
+              queue: Queue[IO, InputMessage],
+              topic: Topic[IO, OutputMessage]
               ): HttpRoutes[IO] = {
 
     HttpRoutes.of {
+
+      case req@POST -> Root / "admin" / "schedule" =>
+        req.as[Job].flatMap { job =>
+          Ok()
+        }
 
       //"ws://localhost:8761/api/v1/ws json" -d '{"login":"worker", "password":"worker", "role":"worker"}' -H "Content-Type: application/json"
       case GET -> Root / "ws" / userLogin =>
@@ -170,7 +227,10 @@ object StationRoutes {
                   queue: Queue[IO, InputMessage] = null,
                   topic: Topic[IO, OutputMessage] = null
                 ): Kleisli[IO, Request[IO], Response[IO]] = {
-    val service = StationService(storage)
+
+  import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.service
+
+  val service = StationService(storage)
     Router[IO]("api/v1" -> routes(service, jobsScheduleState, queue, topic)).orNotFound
   }
 }

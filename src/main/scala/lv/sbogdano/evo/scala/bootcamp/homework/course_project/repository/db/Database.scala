@@ -6,6 +6,8 @@ import doobie.hikari.HikariTransactor
 import doobie.util.transactor.Transactor
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.config.DbConfig
 import doobie.implicits._
+import doobie.util.fragment.Fragment
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.StationQuery.{createTableSchedule, createTableStations}
 
 import scala.concurrent.ExecutionContext
 
@@ -26,5 +28,15 @@ object Database {
     IO(transactor)
   }
 
-  def bootstrap(xa: Transactor[IO]): IO[Int] = StationQuery.createTable.run.transact(xa)
+  def bootstrap(xa: Transactor[IO]) = {
+    val createTableStationsDDL = Fragment.const(createTableStations)
+    val createTableScheduleDDL = Fragment.const(createTableSchedule)
+
+    val setup = for {
+      _ <- createTableStationsDDL.update.run
+      _ <- createTableScheduleDDL.update.run
+    } yield ()
+
+    setup.transact(xa)
+  }
 }
