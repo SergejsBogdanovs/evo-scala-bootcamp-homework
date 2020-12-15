@@ -5,8 +5,15 @@ import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto.deriveEnumerationCodec
 
 sealed trait Status
-case object Completed extends Status
-case object Pending extends Status
+case object Completed extends Status {
+  override def toString: String = "completed"
+}
+case object Pending extends Status {
+  override def toString: String = "pending"
+}
+case object Rejected extends Status {
+  override def toString: String = "rejected"
+}
 
 object Status {
   private implicit val config: Configuration =

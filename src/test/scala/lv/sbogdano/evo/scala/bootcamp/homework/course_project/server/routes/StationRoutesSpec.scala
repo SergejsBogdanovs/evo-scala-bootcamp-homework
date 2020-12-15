@@ -2,16 +2,14 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes
 
 import cats.data.Kleisli
 import cats.effect.IO
-import cats.implicits.catsSyntaxOptionId
 import fs2.Stream
 import io.circe.Json
+import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.AuthResponse.{AuthResponseError, AuthResponseSuccess}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.User
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.{AuthResponseError, AuthResponseSuccess, User}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import org.http4s._
-import io.circe.generic.auto._
 import org.http4s.dsl.io._
 import org.http4s.headers.`Set-Cookie`
 import org.http4s.implicits.http4sLiteralsSyntax

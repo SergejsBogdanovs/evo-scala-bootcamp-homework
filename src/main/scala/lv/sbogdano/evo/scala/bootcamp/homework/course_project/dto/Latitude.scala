@@ -1,7 +1,6 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto
 
 import cats.implicits.catsSyntaxEitherId
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ValidationError.LatitudeInvalid
 
 import scala.util.{Failure, Success, Try}
 

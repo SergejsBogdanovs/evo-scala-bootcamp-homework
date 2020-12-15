@@ -4,8 +4,7 @@ import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Completed, Job, Normal, Pending}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.UserAction
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -63,7 +62,7 @@ class InputMessageSpec extends AnyFlatSpec with Matchers {
     )
 
     val job: Job = Job(
-      1L,
+      1,
       "sergejs",
       Pending,
       Normal(),

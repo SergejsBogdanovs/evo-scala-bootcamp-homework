@@ -2,22 +2,21 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository
 
 import cats.effect.IO
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.UserJobSchedule
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{OutputActionError, UserJobSchedule}
 
 trait Storage {
 
 
-  def createStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]]
+  def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]]
 
-  def updateStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]]
+  def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]]
 
-  def filterStations(name: String): IO[Either[RepositoryOpsError, List[StationEntity]]]
+  def filterStations(name: String): IO[Either[FilterStationError, FilterStationSuccess]]
 
-  def deleteStation(uniqueName: String): IO[Either[RepositoryOpsError, String]]
+  def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]]
 
 
 
@@ -25,9 +24,9 @@ trait Storage {
 
   def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule]
 
-  def updateJobStatus(userLogin: UserLogin, jobId: Long, status: Status): Either[OutputActionError, UserJobSchedule]
+  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): Either[OutputActionError, UserJobSchedule]
 
-  def updateJobPriority(userLogin: UserLogin, jobId: Long, priority: Priority): Either[OutputActionError, UserJobSchedule]
+  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule]
 
   def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule]
 

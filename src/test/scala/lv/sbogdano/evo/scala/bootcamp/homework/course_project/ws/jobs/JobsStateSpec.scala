@@ -2,10 +2,7 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs
 
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.{UserJobSchedule, _}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -106,7 +103,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     )
 
     val job1: Job = Job(
-      1L,
+      1,
       "user1",
       Pending,
       Normal(),
@@ -114,7 +111,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     )
 
     val job2: Job = Job(
-      2L,
+      2,
       "user1",
       Pending,
       Normal(),
@@ -122,7 +119,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     )
 
     val job3: Job = Job(
-      3L,
+      3,
       "user2",
       Completed,
       High(),
@@ -130,7 +127,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     )
 
     val job4: Job = Job(
-      4L,
+      4,
       "user3",
       Pending,
       Low(),
@@ -141,20 +138,20 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     val invalidLogin = "invalid"
 
     val jobs = List(job1, job2, job3)
-    val jobsStateEmpty: JobsState = JobsState(StationService(CacheStorage()))
-    val jobsStateFull: JobsState = JobsState(StationService(CacheStorage(jobsSchedule = jobs)))
+    val jobsStateEmpty: JobsState = JobsState(CacheStorage())
+    val jobsStateFull: JobsState = JobsState(CacheStorage(jobsSchedule = jobs))
 
     val enterJobSchedule: InputMessage = InputMessage(userLogin, EnterJobSchedule)
     val findJobsByUser: InputMessage = InputMessage(userLogin, FindJobsByUser)
     val findJobsByUserAndStatus: InputMessage = InputMessage(userLogin, FindJobsByUserAndStatus(Pending))
     val addJobToSchedule: InputMessage = InputMessage(userLogin, AddJobToSchedule(job = job4))
     val addJobToScheduleExist: InputMessage = InputMessage(userLogin, AddJobToSchedule(job = job3))
-    val updateJobStatus: InputMessage = InputMessage(userLogin, UpdateJobStatus(jobId = 1L, newStatus = Completed))
-    val updateJobStatusInvalidUser: InputMessage = InputMessage(invalidLogin, UpdateJobStatus(jobId = 1L, newStatus = Completed))
-    val updateJobStatusInvalidJobId: InputMessage = InputMessage(userLogin, UpdateJobStatus(jobId = 100L, newStatus = Completed))
-    val updateJobPriority: InputMessage = InputMessage(userLogin, UpdateJobPriority(jobId = 1L, newPriority = High()))
-    val updateJobPriorityInvalidUser: InputMessage = InputMessage(invalidLogin, UpdateJobPriority(jobId = 1L, newPriority = High()))
-    val updateJobPriorityInvalidJobId: InputMessage = InputMessage(userLogin, UpdateJobPriority(jobId = 100L, newPriority = High()))
+    val updateJobStatus: InputMessage = InputMessage(userLogin, UpdateJobStatus(jobId = 1, newStatus = Completed))
+    val updateJobStatusInvalidUser: InputMessage = InputMessage(invalidLogin, UpdateJobStatus(jobId = 1, newStatus = Completed))
+    val updateJobStatusInvalidJobId: InputMessage = InputMessage(userLogin, UpdateJobStatus(jobId = 100, newStatus = Completed))
+    val updateJobPriority: InputMessage = InputMessage(userLogin, UpdateJobPriority(jobId = 1, newPriority = High()))
+    val updateJobPriorityInvalidUser: InputMessage = InputMessage(invalidLogin, UpdateJobPriority(jobId = 1, newPriority = High()))
+    val updateJobPriorityInvalidJobId: InputMessage = InputMessage(userLogin, UpdateJobPriority(jobId = 100, newPriority = High()))
     val deleteJobFromSchedule: InputMessage = InputMessage(userLogin, DeleteJobFromSchedule(job1))
     val deleteNotFoundJobFromSchedule: InputMessage = InputMessage(userLogin, DeleteJobFromSchedule(job4))
     val invalidInput: InputMessage = InputMessage(userLogin, InvalidInput)

@@ -2,11 +2,9 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth
 
 import cats.data._
 import cats.effect.IO
-import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
+import cats.implicits.catsSyntaxEitherId
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.AuthResponse.{AuthResponseError, AuthResponseSuccess}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Role.{Admin, Worker}
 import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
 import org.http4s.dsl.io._
 import org.http4s.{AuthedRequest, _}

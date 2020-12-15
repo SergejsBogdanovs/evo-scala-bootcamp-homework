@@ -4,42 +4,43 @@ import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOpsError.{DeleteStationError, FilterStationError, UpdateStationError}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.UserJobSchedule
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError.{AddJobError, DeleteJobError, FindJobsError, UpdateJobError}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 
 // TODO maybe ExpiringCache jobSchedule?
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
 
-  override def createStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]] = IO {
+  // TODO refactor
+  override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] = IO {
     stations = stations :+ stationEntity
-    stationEntity.asRight
+    CreateStationSuccess(stationEntity).asRight
   }
 
-  override def updateStation(stationEntity: StationEntity): IO[Either[RepositoryOpsError, StationEntity]] = IO {
+  override def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]] = IO {
     val i = stations.indexWhere(_.uniqueName == stationEntity.uniqueName)
     if (i == -1)
       UpdateStationError("Not found station to update").asLeft
     else {
       stations.updated(i, stationEntity)
-      stationEntity.asRight
+      UpdateStationSuccess(stationEntity).asRight
     }
   }
 
-  override def filterStations(name: String): IO[Either[RepositoryOpsError, List[StationEntity]]] = IO {
+  override def filterStations(name: String): IO[Either[FilterStationError, FilterStationSuccess]] = IO {
     val s = stations.filter(_.name == name)
-    if (s.isEmpty) FilterStationError("Not found any station").asLeft else s.asRight
+    if (s.isEmpty)
+      FilterStationError("Not found any station").asLeft
+    else
+      FilterStationSuccess(s).asRight
   }
 
-  override def deleteStation(uniqueName: String): IO[Either[RepositoryOpsError, String]] = IO {
+  override def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]] = IO {
     stations.find(_.uniqueName == uniqueName) match {
       case Some(value) =>
         stations = stations.filter(_.uniqueName != value.uniqueName)
-        uniqueName.asRight
+        DeleteStationSuccess(uniqueName).asRight
       case None => DeleteStationError("Not found station to delete").asLeft
     }
   }
@@ -71,7 +72,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     }
   }
 
-  override def updateJobStatus(userLogin: UserLogin, jobId: Long, newStatus: Status): Either[OutputActionError, UserJobSchedule] = {
+  override def updateJobStatus(userLogin: UserLogin, jobId: Int, newStatus: Status): Either[OutputActionError, UserJobSchedule] = {
     jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
       case Some(_) =>
         val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(status = newStatus) else job)
@@ -81,7 +82,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     }
   }
 
-  override def updateJobPriority(userLogin: UserLogin, jobId: Long, newPriority: Priority): Either[OutputActionError, UserJobSchedule] = {
+  override def updateJobPriority(userLogin: UserLogin, jobId: Int, newPriority: Priority): Either[OutputActionError, UserJobSchedule] = {
     jobsSchedule.find(job => job.userLogin == userLogin && job.id == jobId) match {
       case Some(_) =>
         val updated = jobsSchedule.map(job => if (job.userLogin == userLogin && job.id == jobId) job.copy(priority = newPriority) else job)
@@ -97,75 +98,6 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
       case None    => DeleteJobError("Couldn't find job to delete").asLeft
     }
   }
-
-  // SCHEDULE
-//  override def getJobs(userLogin: UserLogin, status: Status): Either[ErrorOutput, ListJobsOutput] =
-//    jobs.get(userLogin) match {
-//      case Some(jobSchedule) =>
-//
-//        val completedStations: List[StationEntity] = jobSchedule.getOrElse(Completed, List.empty)
-//        val pendingStations: List[StationEntity] = jobSchedule.getOrElse(Pending, List.empty)
-//        val allStations = completedStations ++ pendingStations
-//
-//        val stations = status match {
-//          case Completed => completedStations
-//          case Pending   => pendingStations
-//          case All       => allStations
-//        }
-//
-//        if (stations.isEmpty) {
-//          ErrorOutput("Can not find any jobs").asLeft
-//        } else {
-//          ListJobsOutput(stations).asRight
-//        }
-//
-//      case None =>
-//        ErrorOutput(s"Can not find user: $userLogin").asLeft
-//    }
-//
-//  override def addJobsToUser(toUser: UserLogin, stationEntities: List[StationEntity]): Either[ErrorOutput, AddJobsOutput] =
-//    jobs.get(toUser) match {
-//      case Some(jobSchedule) =>
-//
-//        val newJobSchedule = jobSchedule.flatMap { case (status, stations) => Map(status -> (stations ++ stationEntities)) }
-//
-//        Try(jobs + (toUser -> newJobSchedule)).toEither match {
-//          case Left(_) => ErrorOutput("Error adding new jobs to job schedule").asLeft
-//          case Right(jobs) => AddJobsOutput(jobs).asRight
-//        }
-//
-//      case None =>
-//
-//        val js: JobSchedule = Map(Pending -> stationEntities)
-//
-//        Try(jobs + (toUser -> js)).toEither match {
-//          case Left(_) => ErrorOutput("Error adding new jobs to job schedule").asLeft
-//          case Right(jobs) => AddJobsOutput(jobs).asRight
-//        }
-//    }
-//
-//  override def markJobAsCompleted(userLogin: UserLogin, stationEntity: StationEntity): Either[ErrorOutput, MarkJobAsCompletedOutput] =
-//    jobs.get(userLogin) match {
-//
-//      // Getting worker job schedule
-//      case Some(jobSchedule) =>
-//
-//        // Getting pending jobs
-//        jobSchedule.get(Pending) match {
-//
-//          case Some(pendingJobs) =>
-//
-//            val newPendingJobs = pendingJobs.filter(job => job.uniqueName != stationEntity.uniqueName)
-//            val completedJobs = pendingJobs.filter(job => job.uniqueName == stationEntity.uniqueName)
-//            val newJobSchedule: Map[Status, List[StationEntity]] = jobSchedule + (Pending -> newPendingJobs, Completed -> completedJobs)
-//            MarkJobAsCompletedOutput(Map(userLogin -> newJobSchedule)).asRight
-//
-//          case None => ErrorOutput("Can not find any pending jobs").asLeft
-//        }
-//
-//      case None => ErrorOutput(s"Can not find user: $userLogin").asLeft
-//
-//    }
 }
 
 object CacheStorage {

@@ -5,19 +5,17 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction._
 
 sealed trait InputAction
-object InputAction {
-  case object EnterJobSchedule extends InputAction
-  case object FindJobsByUser extends InputAction
-  case class FindJobsByUserAndStatus(status: Status) extends InputAction
-  case class AddJobToSchedule(job: Job) extends InputAction
-  case class UpdateJobStatus(jobId: Long, newStatus: Status) extends InputAction
-  case class UpdateJobPriority(jobId: Long, newPriority: Priority) extends InputAction
-  case class DeleteJobFromSchedule(job: Job) extends InputAction
-  case object InvalidInput extends InputAction
-}
+case object EnterJobSchedule extends InputAction
+case object FindJobsByUser extends InputAction
+case class FindJobsByUserAndStatus(status: Status) extends InputAction
+case class AddJobToSchedule(job: Job) extends InputAction
+case class UpdateJobStatus(jobId: Int, newStatus: Status) extends InputAction
+case class UpdateJobPriority(jobId: Int, newPriority: Priority) extends InputAction
+case class DeleteJobFromSchedule(job: Job) extends InputAction
+case object InvalidInput extends InputAction
+
 
 object InputActionGenericDerivation {
 

@@ -28,7 +28,7 @@ object Database {
     IO(transactor)
   }
 
-  def bootstrap(xa: Transactor[IO]) = {
+  def bootstrap(xa: Transactor[IO]): IO[Unit] = {
     val createTableStationsDDL = Fragment.const(createTableStations)
     val createTableScheduleDDL = Fragment.const(createTableSchedule)
 

@@ -4,7 +4,6 @@ import cats.implicits.{catsSyntaxValidatedId, catsSyntaxValidatedIdBinCompat0}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.CityRegion.Riga
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.Construction.Indoor
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ObjectType.TP
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ValidationError._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ZoneOfResponsibility.Latgale
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto._
 import org.scalatest.flatspec.AnyFlatSpec

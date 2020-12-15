@@ -1,30 +1,23 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs
 
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.InputAction.{EnterJobSchedule, _}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.WelcomeUser
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputActionError.InvalidInputError
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 
 object JobsState {
-  // Default state
-  def apply(): JobsState = JobsState(service)
-
-  val service: StationService = StationService(CacheStorage())
-
+  def apply(): JobsState = JobsState(CacheStorage())
   type JobSchedule = List[Job]
   type UserLogin = String
 }
 
-case class JobsState(service: StationService) {
+case class JobsState(storage: Storage) {
 
   def process(msg: InputMessage): (JobsState, Seq[OutputMessage]) = msg.action match {
 
     case EnterJobSchedule =>
-      service.findJobsByUser(msg.userLogin) match {
+      storage.findJobsByUser(msg.userLogin) match {
         case Left(_) =>
           updateState(
             userLogin = msg.userLogin,
@@ -34,19 +27,19 @@ case class JobsState(service: StationService) {
       }
 
     case FindJobsByUser =>
-      service.findJobsByUser(msg.userLogin) match {
+      storage.findJobsByUser(msg.userLogin) match {
         case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
         case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case FindJobsByUserAndStatus(status) =>
-      service.findJobsByUserAndStatus(msg.userLogin, status) match {
+      storage.findJobsByUserAndStatus(msg.userLogin, status) match {
         case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
         case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case AddJobToSchedule(job) =>
-      service.addJobToSchedule(job) match {
+      storage.addJobToSchedule(job) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -57,7 +50,7 @@ case class JobsState(service: StationService) {
       }
 
     case UpdateJobStatus(jobId, status) =>
-      service.updateJobStatus(msg.userLogin, jobId, status) match {
+      storage.updateJobStatus(msg.userLogin, jobId, status) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -68,7 +61,7 @@ case class JobsState(service: StationService) {
       }
 
     case UpdateJobPriority(jobId, priority) =>
-      service.updateJobPriority(msg.userLogin, jobId, priority) match {
+      storage.updateJobPriority(msg.userLogin, jobId, priority) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -79,7 +72,7 @@ case class JobsState(service: StationService) {
       }
 
     case DeleteJobFromSchedule(job) =>
-      service.deleteJobFroSchedule(job) match {
+      storage.deleteJobFromSchedule(job) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>           updateState(
           userLogin = msg.userLogin,
@@ -88,77 +81,14 @@ case class JobsState(service: StationService) {
         )
       }
 
-//    case ListJobsInput(status) =>
-//      val jobs: Either[ErrorOutput, ListJobsOutput] = service.listJobs(msg.userLogin, status)
-//      jobs match {
-//        case Left(errorOutputAction) => (this, Seq(SendToUser(msg.userLogin, errorOutputAction)))
-//        case Right(outputAction) => (this, Seq(SendToUser(msg.userLogin, outputAction)))
-//      }
-//
-//    case AddJobsInput(toUser, stationEntities) =>
-//
-//      service.addJobsToUser(toUser, stationEntities) match {
-//
-//        case Left(errorOutputAction) => (this, Seq(SendToUser(toUser, errorOutputAction)))
-//
-//        case Right(outputAction) =>
-//          updateState(
-//            msg.userLogin,
-//            outputAction.jobs,
-//            outputAction
-//          )
-//      }
-//
-//    case MarkJobAsCompletedInput(stationEntity) =>
-//
-//      service.markJobAsCompleted(msg.userLogin, stationEntity) match {
-//
-//        case Left(errorOutputAction) => (this, Seq(SendToUser(msg.userLogin, errorOutputAction)))
-//
-//        case Right(outputAction) =>
-//          updateState(
-//            msg.userLogin,
-//            outputAction.jobs,
-//            outputAction
-//          )
-//      }
-
     case InvalidInput =>
       (this, Seq(OutputMessage(msg.userLogin, InvalidInputError("Invalid input"))))
 
   }
 
-
   private def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
-    val nextState = JobsState(StationService(CacheStorage(jobSchedule)))
+    val nextState = JobsState(CacheStorage(jobSchedule))
     (nextState, Seq(OutputMessage(userLogin, outputAction)))
   }
-
-//  private def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): (JobsState, Seq[OutputMessage]) = {
-//    service.findJobsByUserAndStatus(userLogin, status) match {
-//      case Left(errorOutputAction) => (this, Seq(SendToUser(userLogin, errorOutputAction)))
-//      case Right(listUserJobs)     => (this, Seq(SendToUser(userLogin, listUserJobs)))
-//    }
-//  }
-
-  //    jobs.get(userLogin) match {
-  //      case Some(jobSchedule) =>
-  //        val nextState = JobsState(StationService(CacheStorage(jobs)))
-  //        (nextState, Seq(SendToUser(userLogin, outputAction)))
-  //
-  //
-  //      //        if (jobSchedule == emptyJobSchedule)
-  ////          (nextState, Seq(SendToUser(userLogin, WelcomeOutputAction())))
-  ////        else
-  ////          (nextState, Seq(SendToUser(userLogin, outputAction)))
-  //
-  //      case None => (this, Seq(SendToUser(userLogin, ErrorOutputAction("Can not find any jobs"))))
-  //    }
-
-  //  private def welcomeUser(userLogin: UserLogin, stations: List[StationEntity]): Seq[OutputMessage] =
-  //    if (stations.isEmpty)
-  //      Seq(SendToUser(userLogin, "You have no jobs for today"))
-  //    else
-  //      Seq(SendToUser(userLogin, s"Jobs for today: $stations"))
 }
 

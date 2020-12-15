@@ -7,10 +7,11 @@ import fs2.Stream
 import fs2.concurrent.{Queue, Topic}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.config.{Config, ServerConfig}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.{Database, DatabaseStorage}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes.StationRoutes.makeRouter
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.OutputAction.WelcomeUser
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.WelcomeUser
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.server.blaze.BlazeServerBuilder
 
@@ -48,13 +49,13 @@ object AppServer extends IOApp {
   def server(
               transactor: Transactor[IO],
               serverConfig: ServerConfig,
-              jobsScheduleState: Ref[IO, JobsState],
+              jobState: Ref[IO, JobsState],
               queue: Queue[IO, InputMessage],
               topic: Topic[IO, OutputMessage]
             ): Stream[IO, ExitCode] = {
 
     val storage: Storage = new DatabaseStorage(transactor)
-    val router = makeRouter(storage, jobsScheduleState, queue, topic)
+    val router = makeRouter(storage, jobState, queue, topic)
 
     BlazeServerBuilder[IO](ExecutionContext.global)
       .bindHttp(serverConfig.port, serverConfig.host)
