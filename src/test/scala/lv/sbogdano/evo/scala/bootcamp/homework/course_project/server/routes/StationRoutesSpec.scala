@@ -9,6 +9,7 @@ import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.{AuthResponseError, AuthResponseSuccess, User}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps.{CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.headers.`Set-Cookie`
@@ -154,7 +155,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.Created,
-          expectedBody = stationMockJson.noSpaces,
+          expectedBody = createStationResponseJson.noSpaces,
         )
       }
       case None => fail("Can not find authcookie")
@@ -198,7 +199,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.NotFound,
-          expectedBody = updateStationErrorJson
+          expectedBody = updateStationErrorJson.noSpaces
         )
       case None => fail("Can not find authcookie")
     }
@@ -225,7 +226,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.Ok,
-          expectedBody = updateStationMockJson.noSpaces
+          expectedBody = updateStationResponseJson.noSpaces
         )
 
       case None => fail("Can not find authcookie")
@@ -280,7 +281,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.Ok,
-          expectedBody = stationsMockJson.noSpaces
+          expectedBody = getStationsResponseJson.noSpaces
         )
       case None => fail("Can not find authcookie")
     }
@@ -306,7 +307,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.Ok,
-          expectedBody = stationsMockJson.noSpaces
+          expectedBody = getStationsResponseJson.noSpaces
         )
 
       case None => fail("Can not find authcookie")
@@ -328,7 +329,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.NotFound,
-          expectedBody = getStationErrorJson
+          expectedBody = getStationErrorJson.noSpaces
         )
       case None => fail("Can not find authcookie")
     }
@@ -349,7 +350,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
         check[String](
           actualResponseIO = response,
           expectedStatus = Status.NotFound,
-          expectedBody = deleteStationErrorJson
+          expectedBody = deleteStationErrorJson.noSpaces
         )
       case None => fail("Can not find authcookie")
     }
@@ -422,7 +423,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
       zoneOfResponsibility = "Latgale"
     )
 
-    val updateStationMockJson: Json = StationEntity(
+    val updateStationMock: StationEntity = StationEntity(
       uniqueName = "Riga_AS130",
       stationAddress = "Rigas 6",
       construction = "outdoor",
@@ -433,10 +434,10 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
       latitude = 45.6123,
       longitude = 12.3456,
       zoneOfResponsibility = "Kurzeme"
-    ).asJson
+    )
 
     val stationMockJson: Json = stationMock.asJson
-    val stationsMockJson: Json = List(stationMock).asJson
+    val updateStationMockJson: Json = updateStationMock.asJson
 
     val loginAdmin: User = User(login = "admin", password = "admin")
     val loginWorker: User = User(login = "worker", password = "worker")
@@ -447,11 +448,14 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     val authUserNotFoundJson: Json = AuthResponseError("Couldn't find user by provided cookies").asJson
     val authInvalidUserJson: Json = AuthResponseError("Invalid user").asJson
 
-    val deletedStationResponseJson: Json = stationMock.uniqueName.asJson
+    val deletedStationResponseJson: Json = DeleteStationSuccess(stationMock.uniqueName).asJson
+    val getStationsResponseJson: Json = FilterStationSuccess(List(stationMock)).asJson
+    val updateStationResponseJson: Json = UpdateStationSuccess(updateStationMock).asJson
+    val createStationResponseJson: Json = CreateStationSuccess(stationMock).asJson
 
-    val updateStationErrorJson: String = """{"UpdateStationError":{"errorMessage":"Not found station to update"}}""".stripTrailing
-    val deleteStationErrorJson: String = """{"DeleteStationError":{"errorMessage":"Not found station to delete"}}""".stripTrailing
-    val getStationErrorJson: String = """{"FilterStationError":{"errorMessage":"Not found any station"}}""".stripTrailing
+    val updateStationErrorJson: Json = UpdateStationError("Not found station to update").asJson
+    val deleteStationErrorJson: Json = DeleteStationError("Not found station to delete").asJson
+    val getStationErrorJson: Json = FilterStationError("Not found any station").asJson
 
     val router: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(CacheStorage())
 

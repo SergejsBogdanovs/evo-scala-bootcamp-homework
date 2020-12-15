@@ -27,11 +27,11 @@ object Auth {
   )
 
   def getAuthUser(token: Option[String]): IO[Either[AuthResponseError, Role]] = IO {
-//    token match {
-//      case None       => AuthResponseError("Couldn't find the user by given token").asLeft
-//      case Some(role) => users.get(role).toRight(AuthResponseError("Couldn't find role for this user"))
-//    }
-    users.get("admin").toRight(AuthResponseError("Couldn't find role for this user"))
+    token match {
+      case None       => AuthResponseError("Couldn't find the user by given token").asLeft
+      case Some(role) => users.get(role).toRight(AuthResponseError("Couldn't find role for this user"))
+    }
+//    users.get("admin").toRight(AuthResponseError("Couldn't find role for this user"))
   }
 
   def authUser: Kleisli[IO, Request[IO], Either[AuthResponseError, Role]] = Kleisli { request: Request[IO] =>
@@ -65,8 +65,8 @@ object Auth {
       case Left(error) => Forbidden(error.asJson)
       case Right(role) =>
         val message = crypto.signToken(role.toString, clock.millis.toString)
-//        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", message)))
-        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", role.toString)))
+        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", message)))
+//        Ok(AuthResponseSuccess("Logged in").asJson).map(_.addCookie(ResponseCookie("authcookie", role.toString)))
     }
   }
 
