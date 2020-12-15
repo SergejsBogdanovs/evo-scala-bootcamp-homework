@@ -125,6 +125,7 @@ object StationRoutes {
 
     HttpRoutes.of {
 
+      // TODO write unit test
       case req@POST -> Root / "admin" / "schedule" =>
         req.as[Job].flatMap { job =>
           service.addJobToSchedule(job).flatMap {
@@ -146,7 +147,7 @@ object StationRoutes {
             topic
               .subscribe(1000)
               .filter(_.forUser(userLogin))
-              .map(msg => Text(msg.toString))
+              .map(outputMessage => Text(outputMessage.toString))
 
 
           //WebSocket Input messages

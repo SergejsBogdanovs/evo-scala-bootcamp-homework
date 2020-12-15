@@ -12,12 +12,12 @@ object JobsState {
   type UserLogin = String
 }
 
-case class JobsState(storage: Storage) {
+case class JobsState(cacheStorage: Storage) {
 
   def process(msg: InputMessage): (JobsState, Seq[OutputMessage]) = msg.action match {
 
     case EnterJobSchedule =>
-      storage.findJobsByUser(msg.userLogin) match {
+      cacheStorage.findJobsByUser(msg.userLogin) match {
         case Left(_) =>
           updateState(
             userLogin = msg.userLogin,
@@ -27,19 +27,19 @@ case class JobsState(storage: Storage) {
       }
 
     case FindJobsByUser =>
-      storage.findJobsByUser(msg.userLogin) match {
+      cacheStorage.findJobsByUser(msg.userLogin) match {
         case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
         case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case FindJobsByUserAndStatus(status) =>
-      storage.findJobsByUserAndStatus(msg.userLogin, status) match {
+      cacheStorage.findJobsByUserAndStatus(msg.userLogin, status) match {
         case Left(errorOutputAction) => (this, Seq(OutputMessage(msg.userLogin, errorOutputAction)))
         case Right(listUserJobs)     => (this, Seq(OutputMessage(msg.userLogin, listUserJobs)))
       }
 
     case AddJobToSchedule(job) =>
-      storage.addJobToSchedule(job) match {
+      cacheStorage.addJobToSchedule(job) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -50,7 +50,7 @@ case class JobsState(storage: Storage) {
       }
 
     case UpdateJobStatus(jobId, status) =>
-      storage.updateJobStatus(msg.userLogin, jobId, status) match {
+      cacheStorage.updateJobStatus(msg.userLogin, jobId, status) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -61,7 +61,7 @@ case class JobsState(storage: Storage) {
       }
 
     case UpdateJobPriority(jobId, priority) =>
-      storage.updateJobPriority(msg.userLogin, jobId, priority) match {
+      cacheStorage.updateJobPriority(msg.userLogin, jobId, priority) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>
           updateState(
@@ -72,7 +72,7 @@ case class JobsState(storage: Storage) {
       }
 
     case DeleteJobFromSchedule(job) =>
-      storage.deleteJobFromSchedule(job) match {
+      cacheStorage.deleteJobFromSchedule(job) match {
         case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
         case Right(outputAction) =>           updateState(
           userLogin = msg.userLogin,
