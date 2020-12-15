@@ -15,6 +15,7 @@ case class UpdateJobStatus(jobId: Int, newStatus: Status) extends InputAction
 case class UpdateJobPriority(jobId: Int, newPriority: Priority) extends InputAction
 case class DeleteJobFromSchedule(job: Job) extends InputAction
 case object InvalidInput extends InputAction
+case object Disconnect extends InputAction
 
 
 object InputActionGenericDerivation {

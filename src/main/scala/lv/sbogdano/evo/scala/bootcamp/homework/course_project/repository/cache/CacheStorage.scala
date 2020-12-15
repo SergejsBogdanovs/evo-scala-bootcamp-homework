@@ -9,7 +9,6 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 
-// TODO maybe ExpiringCache jobSchedule?
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
 
   // TODO refactor

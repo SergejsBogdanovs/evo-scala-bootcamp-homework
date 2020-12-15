@@ -10,6 +10,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.{Database, DatabaseStorage}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.server.routes.StationRoutes.makeRouter
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.WelcomeUser
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
@@ -26,7 +27,7 @@ object AppServer extends IOApp {
       _          <- Database.bootstrap(transactor);
       queue      <- Queue.unbounded[IO, InputMessage];
       topic      <- Topic[IO, OutputMessage](OutputMessage("", WelcomeUser("")));
-      ref        <- Ref.of[IO, JobsState](JobsState());
+      ref        <- Ref.of[IO, StationService](StationService(JobsState(), new DatabaseStorage(transactor)));
       exitCode   <- {
         val httpStream = server(transactor, config.serverConfig, ref, queue, topic)
 
@@ -49,13 +50,13 @@ object AppServer extends IOApp {
   def server(
               transactor: Transactor[IO],
               serverConfig: ServerConfig,
-              jobState: Ref[IO, JobsState],
+              serviceRef: Ref[IO, StationService],
               queue: Queue[IO, InputMessage],
               topic: Topic[IO, OutputMessage]
             ): Stream[IO, ExitCode] = {
 
-    val storage: Storage = new DatabaseStorage(transactor)
-    val router = makeRouter(storage, jobState, queue, topic)
+    //val storage: Storage = new DatabaseStorage(transactor)
+    val router = makeRouter(serviceRef, queue, topic)
 
     BlazeServerBuilder[IO](ExecutionContext.global)
       .bindHttp(serverConfig.port, serverConfig.host)

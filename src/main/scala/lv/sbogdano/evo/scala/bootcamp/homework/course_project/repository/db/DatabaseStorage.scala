@@ -9,32 +9,32 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{OutputActionError, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{FindJobsError, OutputActionError, UserJobSchedule}
 
 
 class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
 
   override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] =
-    for {
-      insert <- StationQuery.insertStation(stationEntity).run.transact(transactor)
-      result <- IO {
-        if (insert == 1)
+    StationQuery.insertStation(stationEntity).run.transact(transactor).attempt.map {
+      case Left(_) => CreateStationError("Error during insertion into Database").asLeft
+
+      case Right(value) =>
+        if (value == 1)
           CreateStationSuccess(stationEntity).asRight
         else
           CreateStationError("Error during insertion into Database").asLeft
-      }
-    } yield result
+    }
 
   override def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]] =
-    for {
-      update <- StationQuery.updateStation(stationEntity).run.transact(transactor)
-      result <- IO {
-        if (update == 1)
+    StationQuery.updateStation(stationEntity).run.transact(transactor).attempt.map {
+      case Left(_) => UpdateStationError("Error during update").asLeft
+
+      case Right(value) =>
+        if (value == 1)
           UpdateStationSuccess(stationEntity).asRight
         else
           UpdateStationError("Error during update").asLeft
-      }
-    } yield result
+    }
 
   override def filterStations(name: String): IO[Either[FilterStationError, FilterStationSuccess]] =
     StationQuery.searchStationByName(name).to[List].transact(transactor).attempt.map {
@@ -43,20 +43,18 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
     }
 
   override def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]] =
-    for {
-      delete <- StationQuery.deleteStation(uniqueName).run.transact(transactor)
-      result <- IO {
-        if (delete == 1)
+    StationQuery.deleteStation(uniqueName).run.transact(transactor).attempt.map {
+      case Left(_) => DeleteStationError("Error during delete").asLeft
+
+      case Right(value) =>
+        if (value == 1)
           DeleteStationSuccess(uniqueName).asRight
         else
           DeleteStationError("Error during delete").asLeft
-      }
-    } yield result
+    }
 
 
-
-
-  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = ???
+  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = FindJobsError("error").asLeft
 
   override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = ???
 

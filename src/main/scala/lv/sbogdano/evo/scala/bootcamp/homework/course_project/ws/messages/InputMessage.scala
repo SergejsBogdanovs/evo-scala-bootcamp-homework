@@ -71,7 +71,7 @@ object InputMessage {
 //    // {"time":"2020-12-14T14:53:11.798595Z","action":{"UpdateJobStatus":{"jobId":2,"newStatus":"pending"}}}
 //    val t5 = UserAction(Instant.now, UpdateJobStatus(1L, Completed)).asJson.noSpaces
 //
-//    // {"time":"2020-12-14T14:53:11.850225Z","action":{"UpdateJobPriority":{"jobId":2,"newPriority":{"High":{"value":1}}}}}
+//    // {"time":"2020-12-14T14:53:11.850225Z","action":{"UpdateJobPriority":{"jobId":3,"newPriority":{"High":{"value":1}}}}}
 //    val t6 = UserAction(Instant.now, UpdateJobPriority(2L, High())).asJson.noSpaces
 //
 //    // {"time":"2020-12-11T09:24:12.723735Z","action":{"DeleteJobFromSchedule":{"job":{"id":2,"userLogin":"sergejs","status":"pending","priority":{"Normal":{"value":2}},"station":{"uniqueName":"Riga_AS130","stationAddress":"Stadiona 1","construction":"indoor","yearOfManufacture":2011,"inServiceFrom":2020,"name":"AS130","cityRegion":"Riga","latitude":123.45,"longitude":567.89,"zoneOfResponsibility":"Vidzeme"}}}}}

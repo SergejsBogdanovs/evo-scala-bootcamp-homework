@@ -9,12 +9,12 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobToSchedule, OutputActionError, UserAction, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, Disconnect, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant
 
-class StationService(jobState: Ref[IO, JobsState], storage: Storage) {
+class StationService(jobState: JobsState, storage: Storage) {
 
 
   def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] =
@@ -32,8 +32,37 @@ class StationService(jobState: Ref[IO, JobsState], storage: Storage) {
 
   // JobsSchedule
 
-  def addJobToSchedule(job: Job): IO[Seq[OutputMessage]] =
-    jobState.modify(_.process(InputMessage.from("admin", UserAction(Instant.now(), AddJobToSchedule(job)).asJson.noSpaces)))
+  def process(msg: InputMessage): (StationService, Seq[OutputMessage]) = {
+    val (state, outputMessages) = jobState.process(msg)
+    outputMessages match {
+      case h :: Nil => h.outputAction match {
+
+        case WelcomeUser(_) | UserJobSchedule(_) => (StationService(state, storage), outputMessages)
+
+        case error: OutputActionError => error match {
+
+          case FindJobsError(_) =>
+
+            findJobsByUser(msg.userLogin) match {
+              case Left(error) =>
+                val seq = Seq(OutputMessage(msg.userLogin, error))
+                (StationService(state, storage), seq)
+
+              case Right(listUseJobs) =>
+                val seq = Seq(OutputMessage(msg.userLogin, listUseJobs))
+                (StationService(state, storage), seq)
+            }
+
+          case UpdateJobError(_) | AddJobError(_) | DeleteJobError(_) | InvalidInputError(_) =>
+            (StationService(state, storage), outputMessages)
+        }
+      }
+    }
+  }
+
+  def addJobToSchedule(job: Job): (StationService, Seq[OutputMessage]) = {
+    process(InputMessage.from("admin", UserAction(Instant.now(), AddJobToSchedule(job)).asJson.noSpaces))
+  }
 
   def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
     storage.findJobsByUser(userLogin)
@@ -52,5 +81,5 @@ class StationService(jobState: Ref[IO, JobsState], storage: Storage) {
 }
 
 object StationService {
-  def apply(jobState: Ref[IO, JobsState], storage: Storage) = new StationService(jobState, storage)
+  def apply(jobState: JobsState, storage: Storage) = new StationService(jobState, storage)
 }
