@@ -8,7 +8,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobEntity, Priority, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{FindJobsError, OutputActionError, UpdateJobError, UpdateJobResult, UserJobSchedule}
 
 
@@ -61,11 +61,23 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
     }.unsafeRunSync()
   }
 
-  def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] =
-    StationQuery.insertMany(jobSchedule).transact(transactor).attempt.map {
-      case Left(error)  => UpdateJobError(s"Error during update: $error").asLeft
-      case Right(value) => UpdateJobResult(value).asRight
+  // Very bad code :)
+  def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] = {
+    val t: List[(Job, StationEntity)] = jobSchedule.map(job => (job, job.station))
+    val jobs: List[JobEntity] =
+      t.map { case (job, _) => job }.map(job => JobEntity(job.id, job.userLogin, job.status.toString, job.priority.toString, job.station.uniqueName))
+
+    val stations: List[StationEntity] = t.map { case (_, stationEntity) => stationEntity }
+
+    StationQuery.insertManyStations(stations).transact(transactor).attempt.map {
+            case Left(error)  => UpdateJobError(s"Error during update: $error").asLeft
+            case Right(_) =>
+              StationQuery.insertManyJobs(jobs).transact(transactor).attempt.map {
+                case Left(error)  => UpdateJobError(s"Error during update: $error").asLeft
+                case Right(value) => UpdateJobResult(value).asRight
+              }.unsafeRunSync()
     }.unsafeRunSync()
+  }
 
   override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = ???
 

@@ -72,6 +72,15 @@ object StationQuery {
       .update
   }
 
+
+  def insertJob(job: Job): doobie.Update0 = {
+    sql"""
+         |INSERT INTO schedule (id, userLogin, status, priority, station)
+         |VALUES (${job.id}, ${job.userLogin}, ${job.status.toString}, ${job.priority.toString}, ${job.station.uniqueName})
+        """.stripMargin
+      .update
+  }
+
   def updateStation(stationEntity: StationEntity): doobie.Update0 = {
     sql"""
          |UPDATE stations SET
@@ -160,9 +169,15 @@ object StationQuery {
   def finsJobsByUser(userLogin: UserLogin): doobie.ConnectionIO[List[Job]] =
     (fetchScheduleAndStations ++ fr"WHERE sch.userLogin = $userLogin;").query[Job].to[List]
 
-  def insertMany(jobs: List[Job]): doobie.ConnectionIO[Int] = {
-    val sql = "INSERT INTO schedule (id, userLogin, status, priority, station) VALUES (?, ?, ?, ?, ?)"
-    Update[Job](sql).updateMany(jobs)
+  def insertManyStations(stations: List[StationEntity]): doobie.ConnectionIO[Int] = {
+    val sql1 = "REPLACE INTO stations (uniqueName, stationAddress, construction, yearOfManufacture, inServiceFrom, name, cityRegion, latitude, longitude, zoneOfResponsibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    Update[StationEntity](sql1).updateMany(stations)
+  }
+
+  def insertManyJobs(jobs: List[JobEntity]): doobie.ConnectionIO[Int] = {
+    val sql2 =
+      """REPLACE INTO schedule (id, userLogin, status, priority, station) VALUES (?, ?, ?, ?, ?)""".stripMargin
+    Update[JobEntity](sql2).updateMany(jobs)
   }
 
 //  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): doobie.ConnectionIO[List[Job]] =

@@ -71,7 +71,7 @@ object InputMessage {
 //      // {"time":"2020-12-11T09:24:12.553816Z","action":{"AddJobToSchedule":{"job":{"id":2,"userLogin":"sergejs","status":"pending","priority":{"Normal":{"value":2}},"station":{"uniqueName":"Riga_AS130","stationAddress":"Stadiona 1","construction":"indoor","yearOfManufacture":2011,"inServiceFrom":2020,"name":"AS130","cityRegion":"Riga","latitude":123.45,"longitude":567.89,"zoneOfResponsibility":"Vidzeme"}}}}}
 //    val t41 = UserAction(Instant.now, AddJobToSchedule(job2)).asJson.noSpaces
 //
-//    // {"time":"2020-12-14T14:53:11.798595Z","action":{"UpdateJobStatus":{"jobId":2,"newStatus":"pending"}}}
+//    // {"time":"2020-12-14T14:53:11.798595Z","action":{"UpdateJobStatus":{"jobId":1,"newStatus":"pending"}}}
 //    val t5 = UserAction(Instant.now, UpdateJobStatus(1L, Completed)).asJson.noSpaces
 //
 //    // {"time":"2020-12-14T14:53:11.850225Z","action":{"UpdateJobPriority":{"jobId":3,"newPriority":{"High":{"value":1}}}}}

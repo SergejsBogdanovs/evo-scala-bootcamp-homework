@@ -12,7 +12,7 @@ case class UserJobSchedule(jobSchedule: JobSchedule) extends OutputAction
 case object DisconnectResult extends OutputAction
 //  case class AddJobResult(jobSchedule: JobSchedule) extends OutputAction
   case class UpdateJobResult(updatedRows: Int) extends OutputAction
-  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
+//  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
 
 
 sealed trait OutputActionError extends OutputAction
@@ -30,7 +30,7 @@ object OutputActionGenericDerivation {
     case userJobSchedule   @ UserJobSchedule(_)    => userJobSchedule.asJson
 //    case addJobsResult     @ AddJobResult(_)    => addJobsResult.asJson
     case updateJobResult   @ UpdateJobResult(_) => updateJobResult.asJson
-    case deleteJobResult   @ DeleteJobResult(_) => deleteJobResult.asJson
+//    case deleteJobResult   @ DeleteJobResult(_) => deleteJobResult.asJson
 
     case findJobsError     @ FindJobsError(_)     => findJobsError.asJson
     case updateJobsError   @ UpdateJobError(_)     => updateJobsError.asJson
@@ -46,7 +46,7 @@ object OutputActionGenericDerivation {
       Decoder[UserJobSchedule].widen,
 //      Decoder[AddJobResult].widen,
       Decoder[UpdateJobResult].widen,
-      Decoder[DeleteJobResult].widen,
+//      Decoder[DeleteJobResult].widen,
       Decoder[OutputActionError].widen,
     ).reduceLeft(_ or _)
 }

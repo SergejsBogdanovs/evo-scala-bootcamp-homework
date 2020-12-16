@@ -9,7 +9,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobResult, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant
@@ -37,7 +37,7 @@ class StationService(jobState: JobsState, storage: Storage) {
     outputMessages match {
       case h :: Nil => h.outputAction match {
 
-        case WelcomeUser(_) | UserJobSchedule(_) => (StationService(state, storage), outputMessages)
+        case WelcomeUser(_) | UserJobSchedule(_) | UpdateJobResult(_) => (StationService(state, storage), outputMessages)
 
         case DisconnectResult =>
           val cachedJobSchedule = jobState.cacheStorage.getJobSchedule(msg.userLogin)
@@ -70,17 +70,18 @@ class StationService(jobState: JobsState, storage: Storage) {
             (StationService(state, storage), outputMessages)
         }
       }
+
+      case Nil => ???
     }
   }
 
   def addJobToSchedule(job: Job): (StationService, Seq[OutputMessage]) =
     process(InputMessage.from("admin", UserAction(Instant.now(), AddJobToSchedule(job)).asJson.noSpaces))
 
-
   private def getJobsFromDatabase(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
     storage.findJobsByUser(userLogin)
 
-  private def updateDatabaseWithCache(jobSchedule: JobSchedule) =
+  private def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] =
     storage.updateDatabaseWithCache(jobSchedule)
 
 
