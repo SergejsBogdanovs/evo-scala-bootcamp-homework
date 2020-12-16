@@ -12,7 +12,7 @@ object JobsState {
   type UserLogin = String
 }
 
-case class JobsState(cacheStorage: Storage) {
+case class JobsState(cacheStorage: CacheStorage) {
 
   def process(msg: InputMessage): (JobsState, Seq[OutputMessage]) = msg.action match {
 
@@ -84,12 +84,12 @@ case class JobsState(cacheStorage: Storage) {
     case InvalidInput =>
       (this, Seq(OutputMessage(msg.userLogin, InvalidInputError("Invalid input"))))
 
-    case Disconnect => ???
+    case DisconnectUser => (this, Seq(OutputMessage(msg.userLogin, DisconnectResult)))
 
 
   }
 
-  private def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
+  def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
     val nextState = JobsState(CacheStorage(jobSchedule))
     (nextState, Seq(OutputMessage(userLogin, outputAction)))
   }

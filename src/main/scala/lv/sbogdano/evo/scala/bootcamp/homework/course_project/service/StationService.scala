@@ -7,9 +7,9 @@ import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, Disconnect, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant
@@ -39,18 +39,31 @@ class StationService(jobState: JobsState, storage: Storage) {
 
         case WelcomeUser(_) | UserJobSchedule(_) => (StationService(state, storage), outputMessages)
 
+        case DisconnectResult =>
+          val cachedJobSchedule = jobState.cacheStorage.getJobSchedule(msg.userLogin)
+          updateDatabaseWithCache(cachedJobSchedule) match {
+            case Left(error) =>
+              val seq = Seq(OutputMessage(msg.userLogin, error))
+              (StationService(state, storage), seq)
+
+            case Right(value) =>
+              val seq = Seq(OutputMessage(msg.userLogin, value))
+              (StationService(state, storage), seq)
+          }
+
+
         case error: OutputActionError => error match {
 
           case FindJobsError(_) =>
 
-            findJobsByUser(msg.userLogin) match {
+            getJobsFromDatabase(msg.userLogin) match {
               case Left(error) =>
                 val seq = Seq(OutputMessage(msg.userLogin, error))
                 (StationService(state, storage), seq)
 
-              case Right(listUseJobs) =>
-                val seq = Seq(OutputMessage(msg.userLogin, listUseJobs))
-                (StationService(state, storage), seq)
+              case Right(userJobSchedule) =>
+                val (updatedState, outputMessages) = jobState.updateState(msg.userLogin, userJobSchedule.jobSchedule, userJobSchedule)
+                (StationService(updatedState, storage), outputMessages)
             }
 
           case UpdateJobError(_) | AddJobError(_) | DeleteJobError(_) | InvalidInputError(_) =>
@@ -60,12 +73,20 @@ class StationService(jobState: JobsState, storage: Storage) {
     }
   }
 
-  def addJobToSchedule(job: Job): (StationService, Seq[OutputMessage]) = {
+  def addJobToSchedule(job: Job): (StationService, Seq[OutputMessage]) =
     process(InputMessage.from("admin", UserAction(Instant.now(), AddJobToSchedule(job)).asJson.noSpaces))
-  }
 
-  def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
+
+  private def getJobsFromDatabase(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
     storage.findJobsByUser(userLogin)
+
+  private def updateDatabaseWithCache(jobSchedule: JobSchedule) =
+    storage.updateDatabaseWithCache(jobSchedule)
+
+
+
+
+
 
   def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] =
     storage.findJobsByUserAndStatus(userLogin, status)
@@ -76,7 +97,7 @@ class StationService(jobState: JobsState, storage: Storage) {
   def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule] =
     storage.updateJobPriority(userLogin, jobId, priority)
 
-  def deleteJobFroSchedule(job: Job): Either[OutputActionError, UserJobSchedule] =
+  def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] =
     storage.deleteJobFromSchedule(job)
 }
 

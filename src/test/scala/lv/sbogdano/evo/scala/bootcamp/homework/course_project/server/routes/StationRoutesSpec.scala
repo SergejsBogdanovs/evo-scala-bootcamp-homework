@@ -10,9 +10,7 @@ import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.{AuthResponseError, AuthResponseSuccess, User}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.DatabaseStorage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps.{CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
 import org.http4s._
@@ -23,44 +21,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class StationRoutesSpec extends AnyFlatSpec with Matchers {
-
-//  // LOGIN ADMIN
-//  "HttpService" should "receive authcookie = admin, when login as admin" in new Scope {
-//
-//    val request: Request[IO] = Request(
-//      method = Method.POST,
-//      uri = loginUri,
-//      body = Stream.emits(os = loginAdmin.asJson.noSpaces.map(_.toByte))
-//    )
-//
-//    val response: IO[Response[IO]] = router.run(request)
-//    check[String](
-//      actualResponseIO = response,
-//      expectedStatus = Status.Ok,
-//      expectedBody = authResponseSuccessJson.noSpaces,
-//      expectedResponseCookie = ResponseCookie("authcookie", "admin").some
-//    )
-//  }
-//
-//  // LOGIN WORKER
-//  "HttpService" should "receive authcookie = worker, when login as worker" in new Scope {
-//
-//    val request: Request[IO] = Request(
-//      method = Method.POST,
-//      uri = loginUri,
-//      body = Stream.emits(os = loginWorker.asJson.noSpaces.map(_.toByte))
-//    )
-//
-//    val response: IO[Response[IO]] = router.run(request)
-//    check[String](
-//      actualResponseIO = response,
-//      expectedStatus = Status.Ok,
-//      expectedBody = authResponseSuccessJson.noSpaces,
-//      expectedResponseCookie = ResponseCookie("authcookie", "worker").some
-//    )
-//  }
-
-  // LOGIN INVALID
 
   "HttpService" should "receive AuthResponseError, when try login as invalid user" in new Scope {
 
@@ -519,7 +479,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
       body = Stream.emits(os = user.asJson.noSpaces.map(_.toByte))
     )
 
-    router.unsafeRunSync.run(loginRequest).unsafeRunSync().cookies.find(_.name == "authcookie")
+    router.unsafeRunSync.run(loginRequest).unsafeRunSync.cookies.find(_.name == "authcookie")
   }
 
   private def prepopulateWithData() = {

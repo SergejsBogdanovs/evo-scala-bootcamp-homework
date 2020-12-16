@@ -1,23 +1,22 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db
 
-import doobie.Fragment
 import doobie.implicits.toSqlInterpolator
-import doobie.util.{Read, Write}
 import doobie.util.fragment.Fragment
-import doobie.util.meta.Meta
+import doobie.util.update.Update
+import doobie.util.{Read, Write}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Completed, High, Job, Low, Normal, Pending, Priority, Rejected, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs._
 
 object StationQuery {
 
-  def createDb = {
+  def createDb: doobie.Update0 = {
     sql"""
          |CREATE DATABASE IF NOT EXIST sbogdanovs
          |""".update
   }
 
-  val createTableStations = {
+  val createTableStations: String = {
     """CREATE TABLE IF NOT EXISTS stations (
          |  uniqueName VARCHAR(100) PRIMARY KEY,
          |  stationAddress VARCHAR(100),
@@ -31,14 +30,17 @@ object StationQuery {
          |  zoneOfResponsibility VARCHAR(100));""".stripMargin
   }
 
-  val createTableSchedule =
+  val createTableSchedule: String =
     """CREATE TABLE IF NOT EXISTS schedule (
          |  id INTEGER AUTO_INCREMENT PRIMARY KEY,
          |  userLogin VARCHAR(100),
          |  status VARCHAR(100),
          |  priority VARCHAR(100),
          |  station VARCHAR(100),
-         |  FOREIGN KEY (station) REFERENCES stations(uniqueName));""".stripMargin
+         |  FOREIGN KEY (station) REFERENCES stations(uniqueName)
+         |  ON UPDATE CASCADE
+         |  ON DELETE CASCADE
+         |  );""".stripMargin
 
   def insertStation(stationEntity: StationEntity): doobie.Update0 = {
     sql"""
@@ -124,6 +126,10 @@ object StationQuery {
 
   val fetchScheduleAndStations: Fragment =
     fr"""SELECT
+         sch.id,
+         sch.userLogin,
+         sch.status,
+         sch.priority,
          st.uniqueName,
          st.stationAddress,
          st.construction,
@@ -133,29 +139,44 @@ object StationQuery {
          st.cityRegion,
          st.latitude,
          st.longitude,
-         st.zoneOfResponsibility,
-          sch.id,
-          sch.userLogin,
-          sch.status,
-          sch.priority
-          FROM schedule sch INNER JOIN stations st ON sch.station = stations.uniqueName"""
+         st.zoneOfResponsibility
+         FROM schedule sch
+         INNER JOIN stations st
+         ON sch.station = st.uniqueName"""
+
+  val populateStations: String =
+    s"""
+       |INSERT INTO stations (uniqueName, stationAddress, construction, yearOfManufacture, inServiceFrom, name, cityRegion, latitude, longitude, zoneOfResponsibility)
+       |VALUES ('Riga_AS130', 'Dammes 6', 'outdoor', 2010, 2011, 'as130', 'Riga', 45.6123, 12.3456, 'Latgale');
+       |""".stripMargin
+
+  val populateSchedule: String =
+    s"""
+       |INSERT INTO schedule (id, userLogin, status, priority, station)
+       |VALUES (1, 'sergejs', 'pending', 'high', 'Riga_AS130');
+       |""".stripMargin
 
 
   def finsJobsByUser(userLogin: UserLogin): doobie.ConnectionIO[List[Job]] =
-    (fetchScheduleAndStations ++ fr"WHERE userLogin = $userLogin").query[Job].to[List]
+    (fetchScheduleAndStations ++ fr"WHERE sch.userLogin = $userLogin;").query[Job].to[List]
 
-  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): doobie.ConnectionIO[List[Job]] =
-    (fetchScheduleAndStations ++ fr"WHERE userLogin = $userLogin AND status = ${status.toString}" ).query[Job].to[List]
+  def insertMany(jobs: List[Job]): doobie.ConnectionIO[Int] = {
+    val sql = "INSERT INTO schedule (id, userLogin, status, priority, station) VALUES (?, ?, ?, ?, ?)"
+    Update[Job](sql).updateMany(jobs)
+  }
 
-  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): doobie.ConnectionIO[Int] =
-    sql"""UPDATE schedule SET priority = ${priority.toString} WHERE userLogin = $userLogin AND id = $jobId""".stripMargin.update.run
-
-  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): doobie.ConnectionIO[Int] =
-    sql"""UPDATE schedule SET status = ${status.toString} WHERE userLogin = $userLogin AND id = $jobId""".stripMargin.update.run
-
-  def addJobToSchedule(job: Job): doobie.ConnectionIO[Int] =
-    sql"""INSERT INTO schedule (id, userLogin, status, priority, station)
-         VALUES (${job.id}, ${job.userLogin}, ${job.status.toString}, ${job.priority.toString}, ${job.station.uniqueName})""".stripMargin.update.run
+//  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): doobie.ConnectionIO[List[Job]] =
+//    (fetchScheduleAndStations ++ fr"WHERE userLogin = $userLogin AND status = ${status.toString}" ).query[Job].to[List]
+//
+//  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): doobie.ConnectionIO[Int] =
+//    sql"""UPDATE schedule SET priority = ${priority.toString} WHERE userLogin = $userLogin AND id = $jobId""".stripMargin.update.run
+//
+//  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): doobie.ConnectionIO[Int] =
+//    sql"""UPDATE schedule SET status = ${status.toString} WHERE userLogin = $userLogin AND id = $jobId""".stripMargin.update.run
+//
+//  def addJobToSchedule(job: Job): doobie.ConnectionIO[Int] =
+//    sql"""INSERT INTO schedule (id, userLogin, status, priority, station)
+//         VALUES (${job.id}, ${job.userLogin}, ${job.status.toString}, ${job.priority.toString}, ${job.station.uniqueName})""".stripMargin.update.run
 
   def deleteJobFromSchedule(job: Job): doobie.Update0 =
     sql"""DELETE FROM schedule WHERE userLogin = ${job.userLogin} AND id = ${job.id}""".stripMargin.update

@@ -7,9 +7,9 @@ import doobie.util.transactor.Transactor
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{FindJobsError, OutputActionError, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{FindJobsError, OutputActionError, UpdateJobError, UpdateJobResult, UserJobSchedule}
 
 
 class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
@@ -54,7 +54,18 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
     }
 
 
-  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = FindJobsError("error").asLeft
+  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = {
+    StationQuery.finsJobsByUser(userLogin).transact(transactor).attempt.map {
+      case Left(error)     => FindJobsError(s"Can not find any jobs: $error").asLeft
+      case Right(userJobs) => UserJobSchedule(userJobs).asRight
+    }.unsafeRunSync()
+  }
+
+  def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] =
+    StationQuery.insertMany(jobSchedule).transact(transactor).attempt.map {
+      case Left(error)  => UpdateJobError(s"Error during update: $error").asLeft
+      case Right(value) => UpdateJobResult(value).asRight
+    }.unsafeRunSync()
 
   override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = ???
 

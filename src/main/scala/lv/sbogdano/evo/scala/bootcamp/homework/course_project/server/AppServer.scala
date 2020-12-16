@@ -29,7 +29,7 @@ object AppServer extends IOApp {
       topic      <- Topic[IO, OutputMessage](OutputMessage("", WelcomeUser("")));
       ref        <- Ref.of[IO, StationService](StationService(JobsState(), new DatabaseStorage(transactor)));
       exitCode   <- {
-        val httpStream = server(transactor, config.serverConfig, ref, queue, topic)
+        val httpStream = server(config.serverConfig, ref, queue, topic)
 
         // Stream to process items from the queue and publish the results to the topic
         // 1. Dequeue
@@ -48,7 +48,6 @@ object AppServer extends IOApp {
   }
 
   def server(
-              transactor: Transactor[IO],
               serverConfig: ServerConfig,
               serviceRef: Ref[IO, StationService],
               queue: Queue[IO, InputMessage],

@@ -97,6 +97,10 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
       case None    => DeleteJobError("Couldn't find job to delete").asLeft
     }
   }
+
+  def getJobSchedule(userLogin: UserLogin): JobSchedule = jobsSchedule
+
+  override def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] = ???
 }
 
 object CacheStorage {

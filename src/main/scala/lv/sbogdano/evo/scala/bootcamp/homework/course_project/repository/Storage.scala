@@ -3,9 +3,9 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository
 import cats.effect.IO
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{OutputActionError, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{OutputActionError, UpdateJobError, UpdateJobResult, UserJobSchedule}
 
 trait Storage {
 
@@ -31,4 +31,6 @@ trait Storage {
   def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule]
 
   def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule]
+
+  def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult]
 }

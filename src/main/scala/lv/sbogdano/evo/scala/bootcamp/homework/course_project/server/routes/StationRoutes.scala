@@ -14,7 +14,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, Disconnect, EnterJobSchedule, UserAction, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, DisconnectUser, EnterJobSchedule, UserAction, UserJobSchedule}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.io._
@@ -171,7 +171,7 @@ object StationRoutes {
             val parsedWebSocketInput: Stream[IO, InputMessage] =
               webSocketStream.collect {
                 case Text(text, _) => InputMessage.from(userLogin, text)
-                case Close(_)      => InputMessage(userLogin, Disconnect)
+                case Close(_)      => InputMessage(userLogin, DisconnectUser)
               }
 
             // Enqueue messages to Queue for processing

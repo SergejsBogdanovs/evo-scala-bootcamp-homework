@@ -9,9 +9,10 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.
 sealed trait OutputAction
 case class WelcomeUser(message: String) extends OutputAction
 case class UserJobSchedule(jobSchedule: JobSchedule) extends OutputAction
+case object DisconnectResult extends OutputAction
 //  case class AddJobResult(jobSchedule: JobSchedule) extends OutputAction
-//  case class UpdateJobResult(jobSchedule: JobSchedule) extends OutputAction
-//  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
+  case class UpdateJobResult(updatedRows: Int) extends OutputAction
+  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
 
 
 sealed trait OutputActionError extends OutputAction
@@ -28,8 +29,8 @@ object OutputActionGenericDerivation {
     case welcomeUser       @ WelcomeUser(_)     => welcomeUser.asJson
     case userJobSchedule   @ UserJobSchedule(_)    => userJobSchedule.asJson
 //    case addJobsResult     @ AddJobResult(_)    => addJobsResult.asJson
-//    case updateJobResult   @ UpdateJobResult(_) => updateJobResult.asJson
-//    case deleteJobResult   @ DeleteJobResult(_) => deleteJobResult.asJson
+    case updateJobResult   @ UpdateJobResult(_) => updateJobResult.asJson
+    case deleteJobResult   @ DeleteJobResult(_) => deleteJobResult.asJson
 
     case findJobsError     @ FindJobsError(_)     => findJobsError.asJson
     case updateJobsError   @ UpdateJobError(_)     => updateJobsError.asJson
@@ -44,8 +45,8 @@ object OutputActionGenericDerivation {
       Decoder[WelcomeUser].widen,
       Decoder[UserJobSchedule].widen,
 //      Decoder[AddJobResult].widen,
-//      Decoder[UpdateJobResult].widen,
-//      Decoder[DeleteJobResult].widen,
+      Decoder[UpdateJobResult].widen,
+      Decoder[DeleteJobResult].widen,
       Decoder[OutputActionError].widen,
     ).reduceLeft(_ or _)
 }
