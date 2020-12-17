@@ -13,7 +13,6 @@ import scala.util.Try
 
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
 
-  // TODO refactor
   override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] = IO {
     Try(stations :+ stationEntity).toEither match {
       case Left(_)      => CreateStationError("Error during insertion into Database").asLeft
