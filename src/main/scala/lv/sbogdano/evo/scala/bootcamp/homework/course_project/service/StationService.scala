@@ -1,15 +1,14 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.service
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, SystemError, UpdateJobError, UpdateJobPriority, UpdateJobResult, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant

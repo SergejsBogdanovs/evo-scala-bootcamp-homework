@@ -1,7 +1,7 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache
 
 import cats.effect.IO
-import cats.implicits.{catsSyntaxEitherId, toBifunctorOps}
+import cats.implicits.catsSyntaxEitherId
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
