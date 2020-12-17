@@ -32,8 +32,8 @@ object OutputActionGenericDerivation {
     case updateJobsError   @ UpdateJobError(_)    => updateJobsError.asJson
     case addJobError       @ AddJobError(_)       => addJobError.asJson
     case deleteJobError    @ DeleteJobError(_)    => deleteJobError.asJson
-    case InvalidInputError @ InvalidInputError(_) => InvalidInputError.asJson
-    case systemError       @ SystemError(_)       => SystemError.asJson
+    case invalidInputError @ InvalidInputError(_) => invalidInputError.asJson
+    case systemError       @ SystemError(_)       => systemError.asJson
   }
 
   implicit val decodeOutputAction: Decoder[OutputAction] =
