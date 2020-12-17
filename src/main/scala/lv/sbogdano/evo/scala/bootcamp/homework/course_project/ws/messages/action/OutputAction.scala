@@ -18,7 +18,7 @@ case class UpdateJobError(errorMessage: String) extends OutputActionError
 case class AddJobError(errorMessage: String) extends OutputActionError
 case class DeleteJobError(errorMessage: String) extends OutputActionError
 case class InvalidInputError(errorMessage: String) extends OutputActionError
-
+case class SystemError(errorMessage: String) extends OutputActionError
 
 object OutputActionGenericDerivation {
 
@@ -33,6 +33,7 @@ object OutputActionGenericDerivation {
     case addJobError       @ AddJobError(_)       => addJobError.asJson
     case deleteJobError    @ DeleteJobError(_)    => deleteJobError.asJson
     case InvalidInputError @ InvalidInputError(_) => InvalidInputError.asJson
+    case systemError       @ SystemError(_)       => SystemError.asJson
   }
 
   implicit val decodeOutputAction: Decoder[OutputAction] =
@@ -41,6 +42,7 @@ object OutputActionGenericDerivation {
       Decoder[UserJobSchedule].widen,
       Decoder[UpdateJobResult].widen,
       Decoder[OutputActionError].widen,
+      Decoder[SystemError].widen,
     ).reduceLeft(_ or _)
 }
 

@@ -9,13 +9,12 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, UpdateJobError, UpdateJobPriority, UpdateJobResult, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, AddJobToSchedule, DeleteJobError, DeleteJobFromSchedule, DisconnectResult, DisconnectUser, EnterJobSchedule, FindJobsByUser, FindJobsByUserAndStatus, FindJobsError, InvalidInput, InvalidInputError, OutputActionError, SystemError, UpdateJobError, UpdateJobPriority, UpdateJobResult, UpdateJobStatus, UserAction, UserJobSchedule, WelcomeUser}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant
 
 class StationService(jobState: JobsState, storage: Storage) {
-
 
   def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] =
     storage.createStation(stationEntity)
@@ -71,7 +70,7 @@ class StationService(jobState: JobsState, storage: Storage) {
         }
       }
 
-      case Nil => ???
+      case Nil => (StationService(state, storage), Seq(OutputMessage(msg.userLogin, SystemError("System error"))))
     }
   }
 
@@ -83,23 +82,6 @@ class StationService(jobState: JobsState, storage: Storage) {
 
   private def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] =
     storage.updateDatabaseWithCache(jobSchedule)
-
-
-
-
-
-
-//  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] =
-//    storage.findJobsByUserAndStatus(userLogin, status)
-//
-//  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): Either[OutputActionError, UserJobSchedule] =
-//    storage.updateJobStatus(userLogin, jobId, status)
-//
-//  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule] =
-//    storage.updateJobPriority(userLogin, jobId, priority)
-//
-//  def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] =
-//    storage.deleteJobFromSchedule(job)
 }
 
 object StationService {
