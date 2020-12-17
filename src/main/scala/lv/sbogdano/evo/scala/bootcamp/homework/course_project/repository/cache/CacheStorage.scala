@@ -1,7 +1,7 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache
 
 import cats.effect.IO
-import cats.implicits.catsSyntaxEitherId
+import cats.implicits.{catsSyntaxEitherId, toBifunctorOps}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
@@ -9,12 +9,18 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Rejected, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 
+import scala.util.Try
+
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
 
   // TODO refactor
   override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] = IO {
-    stations = stations :+ stationEntity
-    CreateStationSuccess(stationEntity).asRight
+    Try(stations :+ stationEntity).toEither match {
+      case Left(_)      => CreateStationError("Error during insertion into Database").asLeft
+      case Right(value) =>
+        stations = value
+        CreateStationSuccess(stationEntity).asRight
+    }
   }
 
   override def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]] = IO {

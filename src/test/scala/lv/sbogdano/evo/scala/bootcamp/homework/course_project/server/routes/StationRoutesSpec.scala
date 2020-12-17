@@ -12,7 +12,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState, Normal, Pending}
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.headers.`Set-Cookie`
@@ -86,11 +86,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // UNAUTHORIZED GET
   it should "receive Status 401 Unauthorized when unauthorized user GET Stations" in new Scope {
 
-//    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
+    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     val getRequest: Request[IO] = Request(
       method = Method.GET,
@@ -174,12 +170,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // VALID UPDATE. ADMIN
   it should "receive Status 200 Ok and updated StationEntity when ADMIN UPDATE Station successfully" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
-
+    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     login(loginAdmin) match {
       case Some(responseCookie) =>
@@ -205,11 +196,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // INVALID UPDATE. WORKER
   it should "receive Status 401 Unauthorized when WORKER try UPDATE Station" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
+    val routerUpdate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
 
     login(loginWorker) match {
@@ -234,12 +221,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // AUTHORIZED GET. ADMIN
   it should "receive Status 200 Ok and List[StationEntity] when ADMIN GET Stations" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
-
+    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     login(loginAdmin) match {
       case Some(responseCookie) =>
@@ -262,12 +244,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // AUTHORIZED GET. WORKER
   it should "receive Status 200 Ok and List[StationEntity] when authorized WORKER GET Stations" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
-
+    val routerGet: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     login(loginWorker) match {
       case Some(responseCookie) =>
@@ -333,12 +310,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // VALID DELETE. ADMIN
   it should "receive Status 200 Ok and deleted StationEntity uniqueName when ADMIN delete Station successfully" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
-
+    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     login(loginAdmin) match {
       case Some(responseCookie) =>
@@ -361,12 +333,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
   // INVALID DELETE. WORKER
   it should "receive Status 401 Unauthorized when WORKER try DELETE Station" in new Scope {
 
-    // Prepopulate Storage
-//    val cacheStorage: CacheStorage = CacheStorage()
-//    cacheStorage.createStation(stationMock).unsafeRunSync()
-//    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = StationRoutes.makeRouter(cacheStorage)
-    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData().unsafeRunSync()
-
+    val routerCreate: Kleisli[IO, Request[IO], Response[IO]] = prepopulateWithData.unsafeRunSync()
 
     login(loginWorker) match {
       case Some(responseCookie) =>
@@ -385,8 +352,23 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  trait Scope {
+  // CREATE JOB
+  it should "receive Status 201 Created and JobSchedule as body when Job created successfully" in new Scope {
+    val request: Request[IO] = Request(
+      method = Method.POST,
+      uri = addJobUri,
+      body = Stream.emits(os = job.asJson.noSpaces.map(_.toByte))
+    )
 
+    val response: IO[Response[IO]] = router.unsafeRunSync().run(request)
+    check[String](
+      actualResponseIO = response,
+      expectedStatus = Created,
+      expectedBody = jobScheduleJson.noSpaces,
+    )
+  }
+
+  trait Scope {
 
     val stationMock: StationEntity = StationEntity(
       uniqueName = "Riga_AS130",
@@ -414,8 +396,17 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
       zoneOfResponsibility = "Kurzeme"
     )
 
+    val job: Job = Job(
+      id = 1,
+      userLogin = "login",
+      status = Pending,
+      priority = Normal(),
+      station = stationMock
+    )
+
     val stationMockJson: Json = stationMock.asJson
     val updateStationMockJson: Json = updateStationMock.asJson
+    val jobScheduleJson: Json = List(job).asJson
 
     val loginAdmin: User = User(login = "admin", password = "admin")
     val loginWorker: User = User(login = "worker", password = "worker")
@@ -436,7 +427,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     val getStationErrorJson: Json = FilterStationError("Not found any station").asJson
 
     val router: IO[Kleisli[IO, Request[IO], Response[IO]]] = for {
-        ref <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
+        ref    <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
         router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
     } yield router
 
@@ -444,7 +435,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     val loginUri = uri"/api/v1/login"
     val deleteUri = uri"/api/v1/admin/stations/Riga_AS130"
     val getUri = uri"/api/v1/user/stations/as130"
-    val wrongUri = uri"/api/v2/admin/stations"
+    val addJobUri = uri"/api/v1/schedule"
 
 
     def check[A](
@@ -479,10 +470,10 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
       body = Stream.emits(os = user.asJson.noSpaces.map(_.toByte))
     )
 
-    router.unsafeRunSync.run(loginRequest).unsafeRunSync.cookies.find(_.name == "authcookie")
+    router.unsafeRunSync().run(loginRequest).unsafeRunSync().cookies.find(_.name == "authcookie")
   }
 
-  private def prepopulateWithData() = {
+  private def prepopulateWithData = {
 
     val stationMock: StationEntity = StationEntity(
       uniqueName = "Riga_AS130",

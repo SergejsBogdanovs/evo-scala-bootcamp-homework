@@ -44,21 +44,17 @@ object StationRoutes {
 
     loginRoutes <+>
       wsRouter(serviceRef, queue, topic) <+>
-        authMiddleware.apply(authedRoutes(serviceRef, queue, topic))
+        authMiddleware.apply(authedRoutes(serviceRef))
   }
 
   def authMiddleware: AuthMiddleware[IO, Role] = AuthMiddleware(authUser, inAuthFailure)
-  //def loginMiddleware: AuthMiddleware[IO, User] = AuthMiddleware(loginUser, inAuthFailure)
 
   def authedRoutes(
                     serviceRef: Ref[IO, StationService],
-                    queue: Queue[IO, InputMessage],
-                    topic: Topic[IO, OutputMessage]
                   ): AuthedRoutes[Role, IO] = {
 
     AuthedRoutes.of {
 
-      // curl -X POST "localhost:8761/api/v1/admin/stations" -H "Content-Type: application/json" -d '{"uniqueName": "Riga_AS130","stationAddress": "Dammes 6","construction": "construction","yearOfManufacture": 2010,"inServiceFrom": 2011,"name": "as130","cityRegion": "Riga","latitude": 123.45,"longitude": "45.6123","zoneOfResponsibility": "latgale"}'
       case req@POST -> Root / "admin" / "stations" as role =>
         role match {
           case Worker => IO(Response(Unauthorized))
@@ -75,7 +71,6 @@ object StationRoutes {
             }
         }
 
-      //  curl -X PUT "localhost:8761/api/v1/admin/stations" -H "Content-Type: application/json" -d '{"uniqueName": "35016_AS130","address": "Brivibas 5","construction": "construction","yearOfManufacture": "2015","inServiceFrom": "2010","name": "as116","cityRegion": "Dagda","objectType": "A/st","x": "456123","y": "123456","zoneOfResponsibility": "123456"}'
       case req@PUT -> Root / "admin" / "stations" as role =>
         role match {
           case Worker => IO(Response(Unauthorized))
@@ -92,7 +87,6 @@ object StationRoutes {
             }
         }
 
-      // curl -X DELETE "localhost:8761/api/v1/admin/stations/uniqueName
       case DELETE -> Root / "admin" / "stations" / uniqueName as role =>
         role match {
           case Worker => IO(Response(Unauthorized))
@@ -107,7 +101,6 @@ object StationRoutes {
             } yield resp
         }
 
-      // curl localhost:8761/api/v1/user/stations/as130
       case GET -> Root / "user" / "stations" / name as role =>
         for {
           service <- serviceRef.get
@@ -121,8 +114,6 @@ object StationRoutes {
 
   def loginRoutes: HttpRoutes[IO] = {
     HttpRoutes.of {
-
-      // curl -XPOST "localhost:8761/api/v1/login json" -d '{"name":"worker", "password":"worker"}' -H "Content-Type: application/json"
       case req @ POST -> Root / "login" =>
         loginUser(req)
     }
@@ -136,19 +127,17 @@ object StationRoutes {
 
     HttpRoutes.of {
 
-      // TODO write unit test
-      case req@POST -> Root / "admin" / "schedule" =>
+      case req@POST -> Root / "schedule" =>
         req.as[Job].flatMap { job =>
           serviceRef.modify(_.addJobToSchedule(job)) flatMap {
             case h :: Nil => h.outputAction match {
-              case UserJobSchedule(jobSchedule) => Ok(jobSchedule)
+              case UserJobSchedule(jobSchedule) => Created(jobSchedule)
               case AddJobError(error)           => NotFound(error)
             }
             case Nil      => NotFound()
           }
         }
 
-      //"ws://localhost:8761/api/v1/ws json" -d '{"login":"worker", "password":"worker", "role":"worker"}' -H "Content-Type: application/json"
       case GET -> Root / "ws" / userLogin =>
 
           // WebSocket Output messages

@@ -74,8 +74,10 @@ libraryDependencies ++= Seq(
   "org.tpolecat" %% "doobie-h2" % doobieVersion,
   "org.tpolecat" %% "doobie-hikari" % doobieVersion,
   "org.tpolecat" %% "atto-core" % "0.8.0",
+  "org.tpolecat" %% "doobie-postgres" % "0.9.4",
 
-  "org.specs2" %% "specs2-core" % "4.8.0" % Test,
+
+"org.specs2" %% "specs2-core" % "4.8.0" % Test,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   "org.mockito" %% "mockito-scala" % "1.15.0" % Test,
   "org.scalaj" %% "scalaj-http" % "2.4.2" % Test,
@@ -93,6 +95,8 @@ libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-io" % fs2Version,
 
   "org.reactormonk" %% "cryptobits" % "1.3"
+
+
 )
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
