@@ -10,10 +10,7 @@ sealed trait OutputAction
 case class WelcomeUser(message: String) extends OutputAction
 case class UserJobSchedule(jobSchedule: JobSchedule) extends OutputAction
 case class DisconnectResult(message: String) extends OutputAction
-//  case class AddJobResult(jobSchedule: JobSchedule) extends OutputAction
 case class UpdateJobResult(updatedRows: Int) extends OutputAction
-//  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
-
 
 sealed trait OutputActionError extends OutputAction
 case class FindJobsError(errorMessage: String) extends OutputActionError
@@ -28,7 +25,6 @@ object OutputActionGenericDerivation {
   implicit val encodeOutputAction: Encoder[OutputAction] = Encoder.instance {
     case welcomeUser      @ WelcomeUser(_)   => welcomeUser.asJson
     case userJobSchedule  @ UserJobSchedule(_)  => userJobSchedule.asJson
-//    case addJobsResult     @ AddJobResult(_)    => addJobsResult.asJson
     case updateJobResult  @ UpdateJobResult(_)  => updateJobResult.asJson
     case disconnectResult @ DisconnectResult(_) => disconnectResult.asJson
 
@@ -37,16 +33,13 @@ object OutputActionGenericDerivation {
     case addJobError       @ AddJobError(_)       => addJobError.asJson
     case deleteJobError    @ DeleteJobError(_)    => deleteJobError.asJson
     case InvalidInputError @ InvalidInputError(_) => InvalidInputError.asJson
-
   }
 
   implicit val decodeOutputAction: Decoder[OutputAction] =
     List[Decoder[OutputAction]](
       Decoder[WelcomeUser].widen,
       Decoder[UserJobSchedule].widen,
-//      Decoder[AddJobResult].widen,
       Decoder[UpdateJobResult].widen,
-//      Decoder[DeleteJobResult].widen,
       Decoder[OutputActionError].widen,
     ).reduceLeft(_ or _)
 }

@@ -22,7 +22,7 @@ case class JobsState(cacheStorage: CacheStorage) {
             userLogin = msg.userLogin,
             outputAction = WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work.")
           )
-        case Right(value) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work."))))
+        case Right(_) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work."))))
       }
 
     case FindJobsByUser =>

@@ -28,7 +28,6 @@ object Database {
     IO(transactor)
   }
 
-  // TODO prepolute through config
   def bootstrap(xa: Transactor[IO]): IO[Unit] = {
     val createTableStationsDDL = Fragment.const(createTableStations)
     val createTableScheduleDDL = Fragment.const(createTableSchedule)

@@ -54,7 +54,6 @@ object AppServer extends IOApp {
               topic: Topic[IO, OutputMessage]
             ): Stream[IO, ExitCode] = {
 
-    //val storage: Storage = new DatabaseStorage(transactor)
     val router = makeRouter(serviceRef, queue, topic)
 
     BlazeServerBuilder[IO](ExecutionContext.global)

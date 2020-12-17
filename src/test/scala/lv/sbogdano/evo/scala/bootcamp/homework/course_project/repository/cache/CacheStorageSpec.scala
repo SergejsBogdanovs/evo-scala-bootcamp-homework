@@ -1,8 +1,7 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache
 
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps.{CreateStationError, CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

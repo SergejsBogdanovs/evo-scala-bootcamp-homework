@@ -1,9 +1,9 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs
 
+import cats.syntax.functor._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
-import cats.syntax.functor._
 
 
 sealed trait Priority {

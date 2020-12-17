@@ -33,7 +33,7 @@ final case class ObjectNumber private(objectNumber: Int) {
 
 object ObjectNumber {
   def from(objectNumber: String): Either[ValidationError, ObjectNumber] = {
-    if (objectNumber.length > 0 && objectNumber.length <= 4) {
+    if (objectNumber.nonEmpty && objectNumber.length <= 4) {
       Try(objectNumber.toInt) match {
         case Failure(_)     => ObjectNumberInvalidFormat.asLeft
         case Success(value) => ObjectNumber(value).asRight

@@ -56,7 +56,7 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
 
   override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = {
     StationQuery.finsJobsByUser(userLogin).transact(transactor).attempt.map {
-      case Left(error)     => FindJobsError(s"Can not find any jobs").asLeft
+      case Left(_)         => FindJobsError(s"Can not find any jobs").asLeft
       case Right(userJobs) => if (userJobs.isEmpty) FindJobsError(s"Can not find any jobs").asLeft else UserJobSchedule(userJobs.sorted).asRight
     }.unsafeRunSync()
   }

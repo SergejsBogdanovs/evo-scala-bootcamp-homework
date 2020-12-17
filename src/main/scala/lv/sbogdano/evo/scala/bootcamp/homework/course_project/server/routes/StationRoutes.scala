@@ -11,10 +11,9 @@ import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.Auth.{authUser, inAuthFailure, loginUser}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.auth.{Admin, Role, Worker}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.StationService
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{AddJobError, DisconnectUser, EnterJobSchedule, UserAction, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.Job
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.io._
@@ -183,16 +182,13 @@ object StationRoutes {
           WebSocketBuilder[IO].build(toClient, inputPipe)
         }
 
+
     }
 
   def makeRouter(
-                  serviceRef: Ref[IO, StationService] = null,
-                  queue: Queue[IO, InputMessage] = null,
-                  topic: Topic[IO, OutputMessage] = null
-                ): Kleisli[IO, Request[IO], Response[IO]] = {
+                  serviceRef: Ref[IO, StationService],
+                  queue: Queue[IO, InputMessage],
+                  topic: Topic[IO, OutputMessage]
+                ): Kleisli[IO, Request[IO], Response[IO]] = Router[IO]("api/v1" -> routes(serviceRef, queue, topic)).orNotFound
 
-    //val service = StationService(jobState, storage)
-    Router[IO]("api/v1" -> routes(serviceRef, queue, topic)).orNotFound
-
-  }
 }

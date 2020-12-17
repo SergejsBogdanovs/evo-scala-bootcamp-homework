@@ -437,7 +437,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
 
     val router: IO[Kleisli[IO, Request[IO], Response[IO]]] = for {
         ref <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
-        router = StationRoutes.makeRouter(ref)
+        router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
     } yield router
 
     val postUri = uri"/api/v1/admin/stations"
@@ -469,7 +469,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     val loginUri = uri"/api/v1/login"
     val router = for {
       ref <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
-      router = StationRoutes.makeRouter(ref)
+      router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
       } yield router
 
 
@@ -498,8 +498,8 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     )
 
     for {
-      ref <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage(stations = List(stationMock))))
-      router   = StationRoutes.makeRouter(ref)
+      ref    <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage(stations = List(stationMock))))
+      router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
     } yield router
   }
 
