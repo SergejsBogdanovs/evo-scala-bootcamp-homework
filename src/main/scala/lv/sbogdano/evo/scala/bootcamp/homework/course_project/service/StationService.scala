@@ -39,8 +39,8 @@ class StationService(jobState: JobsState, storage: Storage) {
 
         case WelcomeUser(_) | UserJobSchedule(_) | UpdateJobResult(_) => (StationService(state, storage), outputMessages)
 
-        case DisconnectResult =>
-          val cachedJobSchedule = jobState.cacheStorage.getJobSchedule(msg.userLogin)
+        case DisconnectResult(_) =>
+          val cachedJobSchedule = jobState.cacheStorage.getJobSchedule
           updateDatabaseWithCache(cachedJobSchedule) match {
             case Left(error) =>
               val seq = Seq(OutputMessage(msg.userLogin, error))
@@ -89,17 +89,17 @@ class StationService(jobState: JobsState, storage: Storage) {
 
 
 
-  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] =
-    storage.findJobsByUserAndStatus(userLogin, status)
-
-  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): Either[OutputActionError, UserJobSchedule] =
-    storage.updateJobStatus(userLogin, jobId, status)
-
-  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule] =
-    storage.updateJobPriority(userLogin, jobId, priority)
-
-  def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] =
-    storage.deleteJobFromSchedule(job)
+//  def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] =
+//    storage.findJobsByUserAndStatus(userLogin, status)
+//
+//  def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): Either[OutputActionError, UserJobSchedule] =
+//    storage.updateJobStatus(userLogin, jobId, status)
+//
+//  def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule] =
+//    storage.updateJobPriority(userLogin, jobId, priority)
+//
+//  def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] =
+//    storage.deleteJobFromSchedule(job)
 }
 
 object StationService {

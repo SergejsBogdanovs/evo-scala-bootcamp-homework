@@ -44,6 +44,10 @@ class InputMessageSpec extends AnyFlatSpec with Matchers {
     InputMessage.from(userLogin, invalidInputText) shouldBe InputMessage(userLogin, InvalidInput)
   }
 
+  it should "decode user action DisconnectUser as text to DisconnectUser entity" in new Scope {
+    InputMessage.from(userLogin, disconnectInputText) shouldBe InputMessage(userLogin, DisconnectUser)
+  }
+
   trait Scope {
     val userLogin = "user"
     val instant: Instant = Instant.now()
@@ -77,5 +81,6 @@ class InputMessageSpec extends AnyFlatSpec with Matchers {
     val updateJobPriorityText: String = UserAction(instant, UpdateJobPriority(job.id, Normal())).asJson.noSpaces
     val deleteJobFromScheduleText: String = UserAction(instant, DeleteJobFromSchedule(job)).asJson.noSpaces
     val invalidInputText: String = UserAction(instant, InvalidInput).asJson.noSpaces
+    val disconnectInputText: String = UserAction(instant, DisconnectUser).asJson.noSpaces
   }
 }

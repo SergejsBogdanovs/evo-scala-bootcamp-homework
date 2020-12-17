@@ -1,6 +1,5 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs
 
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages._
@@ -23,7 +22,7 @@ case class JobsState(cacheStorage: CacheStorage) {
             userLogin = msg.userLogin,
             outputAction = WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work.")
           )
-        case Right(value) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome ${msg.userLogin}, jobs for today ${value.jobSchedule}"))))
+        case Right(value) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work."))))
       }
 
     case FindJobsByUser =>
@@ -72,9 +71,9 @@ case class JobsState(cacheStorage: CacheStorage) {
       }
 
     case DeleteJobFromSchedule(job) =>
-      cacheStorage.deleteJobFromSchedule(job) match {
-        case Left(error)         => (this, Seq(OutputMessage(msg.userLogin, error)))
-        case Right(outputAction) =>           updateState(
+      cacheStorage.updateJobStatus(job.userLogin, job.id, newStatus = Rejected) match {
+        case Left(_)         => (this, Seq(OutputMessage(msg.userLogin, DeleteJobError("Couldn't find job to delete"))))
+        case Right(outputAction) => updateState(
           userLogin = msg.userLogin,
           jobSchedule = outputAction.jobSchedule,
           outputAction = outputAction
@@ -84,9 +83,8 @@ case class JobsState(cacheStorage: CacheStorage) {
     case InvalidInput =>
       (this, Seq(OutputMessage(msg.userLogin, InvalidInputError("Invalid input"))))
 
-    case DisconnectUser => (this, Seq(OutputMessage(msg.userLogin, DisconnectResult)))
-
-
+    case DisconnectUser =>
+      (this, Seq(OutputMessage(msg.userLogin, DisconnectResult("User disconnected"))))
   }
 
   def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {

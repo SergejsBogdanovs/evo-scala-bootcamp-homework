@@ -9,9 +9,9 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.
 sealed trait OutputAction
 case class WelcomeUser(message: String) extends OutputAction
 case class UserJobSchedule(jobSchedule: JobSchedule) extends OutputAction
-case object DisconnectResult extends OutputAction
+case class DisconnectResult(message: String) extends OutputAction
 //  case class AddJobResult(jobSchedule: JobSchedule) extends OutputAction
-  case class UpdateJobResult(updatedRows: Int) extends OutputAction
+case class UpdateJobResult(updatedRows: Int) extends OutputAction
 //  case class DeleteJobResult(jobSchedule: JobSchedule) extends OutputAction
 
 
@@ -26,17 +26,17 @@ case class InvalidInputError(errorMessage: String) extends OutputActionError
 object OutputActionGenericDerivation {
 
   implicit val encodeOutputAction: Encoder[OutputAction] = Encoder.instance {
-    case welcomeUser       @ WelcomeUser(_)     => welcomeUser.asJson
-    case userJobSchedule   @ UserJobSchedule(_)    => userJobSchedule.asJson
+    case welcomeUser      @ WelcomeUser(_)   => welcomeUser.asJson
+    case userJobSchedule  @ UserJobSchedule(_)  => userJobSchedule.asJson
 //    case addJobsResult     @ AddJobResult(_)    => addJobsResult.asJson
-    case updateJobResult   @ UpdateJobResult(_) => updateJobResult.asJson
-//    case deleteJobResult   @ DeleteJobResult(_) => deleteJobResult.asJson
+    case updateJobResult  @ UpdateJobResult(_)  => updateJobResult.asJson
+    case disconnectResult @ DisconnectResult(_) => disconnectResult.asJson
 
     case findJobsError     @ FindJobsError(_)     => findJobsError.asJson
-    case updateJobsError   @ UpdateJobError(_)     => updateJobsError.asJson
-    case addJobError       @ AddJobError(_)     => addJobError.asJson
-    case deleteJobError    @ DeleteJobError(_)     => deleteJobError.asJson
-    case InvalidInputError @ InvalidInputError(_)     => InvalidInputError.asJson
+    case updateJobsError   @ UpdateJobError(_)    => updateJobsError.asJson
+    case addJobError       @ AddJobError(_)       => addJobError.asJson
+    case deleteJobError    @ DeleteJobError(_)    => deleteJobError.asJson
+    case InvalidInputError @ InvalidInputError(_) => InvalidInputError.asJson
 
   }
 

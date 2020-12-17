@@ -167,7 +167,7 @@ class JobsStateSpec extends AnyFlatSpec with Matchers {
     val updateJobStatusInvalidJobIdError: OutputMessage = OutputMessage(userLogin, UpdateJobError("Couldn't find job to update status by provided user and/or job id"))
     val updateJobPriorityInvalidUserError: OutputMessage = OutputMessage(invalidLogin, UpdateJobError("Couldn't find job to update priority by provided user and/or job id"))
     val updateJobPriorityInvalidJobIdError: OutputMessage = OutputMessage(userLogin, UpdateJobError("Couldn't find job to update priority by provided user and/or job id"))
-    val deleteJobResult: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job2, job3).sorted))
+    val deleteJobResult: OutputMessage = OutputMessage(userLogin, UserJobSchedule(List(job1.copy(status = Rejected), job2, job3).sorted))
     val deleteJobError: OutputMessage = OutputMessage(userLogin, DeleteJobError("Couldn't find job to delete"))
     val invalidInputError: OutputMessage = OutputMessage(userLogin, InvalidInputError("Invalid input"))
   }

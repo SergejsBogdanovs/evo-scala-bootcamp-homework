@@ -1,4 +1,4 @@
-package lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action
+package lv.sbogdano.evo.  scala.bootcamp.homework.course_project.ws.messages.action
 
 import cats.syntax.functor._
 import io.circe.generic.auto._
@@ -26,6 +26,7 @@ object InputActionGenericDerivation {
     case addJobsToSchedule       @ AddJobToSchedule(_)        => addJobsToSchedule.asJson
     case updateJobStatus         @ UpdateJobStatus(_, _)      => updateJobStatus.asJson
     case updateJobPriority       @ UpdateJobPriority(_, _)    => updateJobPriority.asJson
+    case deleteJobFromSchedule   @ DeleteJobFromSchedule(_)   => deleteJobFromSchedule.asJson
   }
 
   implicit val decodeInputAction: Decoder[InputAction] =
@@ -34,6 +35,7 @@ object InputActionGenericDerivation {
       Decoder[AddJobToSchedule].widen,
       Decoder[UpdateJobStatus].widen,
       Decoder[UpdateJobPriority].widen,
+      Decoder[DeleteJobFromSchedule].widen,
     ).reduceLeft(_ or _)
 }
 

@@ -6,7 +6,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEnti
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Rejected, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
 
 class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity]) extends Storage {
@@ -47,7 +47,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
   // SCHEDULE
 
   override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = {
-    val userJobs: JobSchedule = jobsSchedule.filter(_.userLogin == userLogin)
+    val userJobs: JobSchedule = jobsSchedule.filter(job => job.userLogin == userLogin && job.status != Rejected)
     if (userJobs.isEmpty) {
       FindJobsError("Can not find any jobs").asLeft
     } else {
@@ -98,7 +98,7 @@ class CacheStorage(jobsSchedule: JobSchedule, var stations: List[StationEntity])
     }
   }
 
-  def getJobSchedule(userLogin: UserLogin): JobSchedule = jobsSchedule
+  def getJobSchedule: JobSchedule = jobsSchedule
 
   override def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] = ???
 }

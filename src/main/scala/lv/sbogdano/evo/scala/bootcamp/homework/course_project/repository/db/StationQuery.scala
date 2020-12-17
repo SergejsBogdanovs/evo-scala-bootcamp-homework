@@ -72,14 +72,13 @@ object StationQuery {
       .update
   }
 
-
-  def insertJob(job: Job): doobie.Update0 = {
-    sql"""
-         |INSERT INTO schedule (id, userLogin, status, priority, station)
-         |VALUES (${job.id}, ${job.userLogin}, ${job.status.toString}, ${job.priority.toString}, ${job.station.uniqueName})
-        """.stripMargin
-      .update
-  }
+//  def insertJob(job: Job): doobie.Update0 = {
+//    sql"""
+//         |INSERT INTO schedule (id, userLogin, status, priority, station)
+//         |VALUES (${job.id}, ${job.userLogin}, ${job.status.toString}, ${job.priority.toString}, ${job.station.uniqueName})
+//        """.stripMargin
+//      .update
+//  }
 
   def updateStation(stationEntity: StationEntity): doobie.Update0 = {
     sql"""
@@ -114,8 +113,8 @@ object StationQuery {
       .update
   }
 
-  val jobs: Fragment = fr"SELECT * FROM schedule"
-  val stations: Fragment = fr"SELECT * FROM stations"
+//  val jobs: Fragment = fr"SELECT * FROM schedule"
+//  val stations: Fragment = fr"SELECT * FROM stations"
 
   implicit val statusRead: Read[Status] = Read[String].map {
     case "completed" => Completed
@@ -167,7 +166,7 @@ object StationQuery {
 
 
   def finsJobsByUser(userLogin: UserLogin): doobie.ConnectionIO[List[Job]] =
-    (fetchScheduleAndStations ++ fr"WHERE sch.userLogin = $userLogin;").query[Job].to[List]
+    (fetchScheduleAndStations ++ fr"WHERE sch.userLogin = $userLogin AND sch.status <> 'rejected';").query[Job].to[List]
 
   def insertManyStations(stations: List[StationEntity]): doobie.ConnectionIO[Int] = {
     val sql1 = "REPLACE INTO stations (uniqueName, stationAddress, construction, yearOfManufacture, inServiceFrom, name, cityRegion, latitude, longitude, zoneOfResponsibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
