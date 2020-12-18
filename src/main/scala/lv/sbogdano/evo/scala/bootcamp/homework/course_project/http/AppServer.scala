@@ -26,14 +26,14 @@ object AppServer extends IOApp {
       topic      <- Topic[IO, OutputMessage](OutputMessage("", WelcomeUser("")));
       ref        <- Ref.of[IO, StationService](StationService(JobsState(), new DatabaseStorage(transactor)));
       exitCode   <- {
-        val httpStream = server(config.serverConfig, ref, queue, topic)
+        val httpStream: Stream[IO, ExitCode] = server(config.serverConfig, ref, queue, topic)
 
         // Stream to process items from the queue and publish the results to the topic
         // 1. Dequeue
         // 2. apply message to state reference
         // 3. Convert resulting output messages to a stream
         // 4. Publish output messages to the publish/subscribe topic
-        val processingStream =
+        val processingStream: Stream[IO, Unit] =
           queue
             .dequeue
             .evalMap(inputMessage => ref.modify(_.process(inputMessage)))
