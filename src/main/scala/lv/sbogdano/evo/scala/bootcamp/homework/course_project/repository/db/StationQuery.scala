@@ -4,9 +4,9 @@ import doobie.implicits.toSqlInterpolator
 import doobie.util.fragment.Fragment
 import doobie.util.update.Update
 import doobie.util.{Read, Write}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.UserLogin
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.JobsState.UserLogin
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.{Job, _}
 
 object StationQuery {
 

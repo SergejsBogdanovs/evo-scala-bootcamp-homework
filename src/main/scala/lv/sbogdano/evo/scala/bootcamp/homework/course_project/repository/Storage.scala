@@ -1,11 +1,11 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository
 
 import cats.effect.IO
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, Priority, Status}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action.{OutputActionError, UpdateJobError, UpdateJobResult, UserJobSchedule}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.RepositoryOps.{CreateStationError, CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.JobsState.{JobSchedule, UserLogin}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.{Job, Priority, Status}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.action.{OutputActionError, UpdateJobError, UpdateJobResult, UserJobSchedule}
 
 trait Storage {
 

@@ -1,11 +1,11 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.validator
 
 import cats.implicits.{catsSyntaxValidatedId, catsSyntaxValidatedIdBinCompat0}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.CityRegion.Riga
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.Construction.Indoor
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ObjectType.TP
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto.ZoneOfResponsibility.Latgale
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.CityRegion.Riga
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.Construction.Indoor
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.ObjectType.TP
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.ZoneOfResponsibility.Latgale
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

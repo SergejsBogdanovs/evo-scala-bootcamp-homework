@@ -1,13 +1,13 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db
 
-import cats.effect.{Blocker, ContextShift, IO, Sync}
+import cats.effect.{Blocker, ContextShift, IO}
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.config.DbConfig
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.StationQuery.{createTableSchedule, createTableStations, populateSchedule, populateStations}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.db.StationQuery.{createTableSchedule, createTableStations}
 
 import scala.concurrent.ExecutionContext
 

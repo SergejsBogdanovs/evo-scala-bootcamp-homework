@@ -2,7 +2,8 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.service.validator
 
 import cats.data.ValidatedNec
 import cats.implicits.{catsSyntaxTuple9Semigroupal, catsSyntaxValidatedId, catsSyntaxValidatedIdBinCompat0}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.dto._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station._
 
 object StationValidator {
 
@@ -13,7 +14,7 @@ object StationValidator {
       case Left(error) => error.invalidNec
       case Right(name) => StreetNumber.from(streetNumber) match {
         case Left(error)   => error.invalidNec
-        case Right(number) => StationAddress(name, number).valid
+        case Right(number) => station.StationAddress(name, number).valid
       }
     }
   }
@@ -44,7 +45,7 @@ object StationValidator {
       case Left(error)       => error.invalidNec
       case Right(objectType) => ObjectNumber.from(objectNumber) match {
         case Left(error)         => error.invalidNec
-        case Right(objectNumber) => Name(objectType, objectNumber).valid
+        case Right(objectNumber) => station.Name(objectType, objectNumber).valid
       }
     }
   }

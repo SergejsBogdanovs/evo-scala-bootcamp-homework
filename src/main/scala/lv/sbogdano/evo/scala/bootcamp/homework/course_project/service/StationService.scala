@@ -3,13 +3,13 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.service
 import cats.effect.IO
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.StationEntity
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.RepositoryOps.{CreateStationError, CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.error.RepositoryOps._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.JobsState.{JobSchedule, UserLogin}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.jobs.{Job, JobsState}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.action._
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.ws.messages.{InputMessage, OutputMessage}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.JobsState.{JobSchedule, UserLogin}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.{Job, JobsState}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.action._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.{InputMessage, OutputMessage}
 
 import java.time.Instant
 
@@ -64,7 +64,7 @@ class StationService(jobState: JobsState, storage: Storage) {
                 (StationService(updatedState, storage), outputMessages)
             }
 
-          case UpdateJobError(_) | AddJobError(_) | DeleteJobError(_) | InvalidInputError(_) =>
+          case UpdateJobError(_) | AddJobError(_) | DeleteJobError(_) | InvalidInputError(_) | SystemError(_) =>
             (StationService(state, storage), outputMessages)
         }
       }
