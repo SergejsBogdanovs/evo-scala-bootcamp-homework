@@ -20,6 +20,7 @@ case class JobsState(cacheStorage: CacheStorage) {
         case Left(_) =>
           updateState(
             userLogin = msg.userLogin,
+            jobSchedule = List.empty,
             outputAction = WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work.")
           )
         case Right(_) =>(this, Seq(OutputMessage(msg.userLogin, WelcomeUser(s"Welcome, ${msg.userLogin.capitalize}! Today is another great day for work."))))
@@ -87,7 +88,7 @@ case class JobsState(cacheStorage: CacheStorage) {
       (this, Seq(OutputMessage(msg.userLogin, DisconnectResult("User disconnected"))))
   }
 
-  def updateState(userLogin: UserLogin, jobSchedule: JobSchedule = List.empty, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
+  def updateState(userLogin: UserLogin, jobSchedule: JobSchedule, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
     val nextState = JobsState(CacheStorage(jobSchedule))
     (nextState, Seq(OutputMessage(userLogin, outputAction)))
   }
