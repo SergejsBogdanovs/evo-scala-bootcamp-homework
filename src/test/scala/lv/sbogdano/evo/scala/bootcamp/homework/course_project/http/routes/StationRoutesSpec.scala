@@ -8,7 +8,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.auth.{AuthResponseError, AuthResponseSuccess, User}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.RepositoryOps._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.{Job, JobsState, Normal, Pending}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache.CacheStorage

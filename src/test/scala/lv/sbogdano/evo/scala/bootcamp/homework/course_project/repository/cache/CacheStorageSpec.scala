@@ -1,6 +1,6 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache
 
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.RepositoryOps._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

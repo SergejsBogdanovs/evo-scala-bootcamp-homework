@@ -2,12 +2,12 @@ package lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.cache
 
 import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.RepositoryOps.{CreateStationError, CreateStationSuccess, DeleteStationError, DeleteStationSuccess, FilterStationError, FilterStationSuccess, UpdateStationError, UpdateStationSuccess}
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
-import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.JobsState.{JobSchedule, UserLogin}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.{Job, Priority, Rejected, Status}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.action._
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.StationEntity
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 
 import scala.util.Try
 
