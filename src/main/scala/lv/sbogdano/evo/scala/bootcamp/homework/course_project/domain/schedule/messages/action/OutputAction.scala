@@ -9,7 +9,7 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.jo
 sealed trait OutputAction
 case class WelcomeUser(message: String) extends OutputAction
 case class UserJobSchedule(jobSchedule: JobSchedule) extends OutputAction
-case class DisconnectResult(message: String) extends OutputAction
+case class DisconnectResult(jobSchedule: JobSchedule) extends OutputAction
 case class UpdateJobResult(updatedRows: Int) extends OutputAction
 
 sealed trait OutputActionError extends OutputAction

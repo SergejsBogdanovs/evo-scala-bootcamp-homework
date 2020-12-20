@@ -47,9 +47,8 @@ class StationService(jobState: JobsState, storage: Storage) {
 
         case WelcomeUser(_) | UserJobSchedule(_) | UpdateJobResult(_) => (StationService(state, storage), outputMessages)
 
-        case DisconnectResult(_) =>
-          val cachedJobSchedule = jobState.cacheStorage.getJobSchedule
-          updateDatabaseWithCache(cachedJobSchedule) match {
+        case DisconnectResult(data) =>
+          updateDatabaseWithCache(data) match {
             case Left(error) =>
               val seq = Seq(OutputMessage(msg.userLogin, error))
               (StationService(state, storage), seq)

@@ -116,7 +116,8 @@ case class JobsState(cacheStorage: CacheStorage) {
       (this, Seq(OutputMessage(msg.userLogin, InvalidInputError("Invalid input"))))
 
     case DisconnectUser =>
-      (this, Seq(OutputMessage(msg.userLogin, DisconnectResult("User disconnected"))))
+      val data = cacheStorage.getJobSchedule
+      (this, Seq(OutputMessage(msg.userLogin, DisconnectResult(data))))
   }
 
   def updateState(userLogin: UserLogin, jobSchedule: JobSchedule, outputAction: OutputAction): (JobsState, Seq[OutputMessage]) = {
