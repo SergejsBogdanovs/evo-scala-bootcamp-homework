@@ -9,6 +9,7 @@ import fs2.{Pipe, Stream}
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.auth.{Admin, Role, Worker}
+import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository.{CacheCreateStationSuccess, CacheDeleteStationSuccess, CacheUpdateStationSuccess, CreateStationError, DeleteStationError, FilterStationError, FilterStationSuccess, RepositoryError, RepositoryResponse, UpdateStationError}
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.job.Job
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.action._
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.schedule.messages.{InputMessage, OutputMessage}
@@ -61,29 +62,22 @@ object StationRoutes {
 
           case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
-              for {
-                service <- serviceRef.get
-                resp    <- service.createStation(stationEntity).flatMap {
-                  case Right(stationEntity) => Created(stationEntity.asJson)
-                  case Left(message)        => BadRequest(message.asJson)
-                }
-              } yield resp
+              serviceRef.modify(_.createStation(stationEntity)).flatMap {
+                case error: CreateStationError         => BadRequest(error.asJson)
+                case result: CacheCreateStationSuccess => Created(result.asJson)
+              }
             }
         }
 
       case req@PUT -> Root / "admin" / "stations" as role =>
         role match {
           case Worker => IO(Response(Unauthorized))
-
           case Admin =>
             req.req.as[StationEntity].flatMap { stationEntity =>
-              for {
-                service <- serviceRef.get
-                resp    <- service.updateStation(stationEntity).flatMap {
-                  case Right(stationEntity) => Ok(stationEntity.asJson)
-                  case Left(message)        => NotFound(message.asJson)
-                }
-              } yield resp
+              serviceRef.modify(_.updateStation(stationEntity)).flatMap {
+                case error: UpdateStationError         => NotFound(error.asJson)
+                case result: CacheUpdateStationSuccess => Ok(result.asJson)
+              }
             }
         }
 
@@ -92,23 +86,18 @@ object StationRoutes {
           case Worker => IO(Response(Unauthorized))
 
           case Admin =>
-            for {
-              service <- serviceRef.get
-              resp    <- service.deleteStation(uniqueName).flatMap {
-                case Right(uniqueName) => Ok(uniqueName.asJson)
-                case Left(error)       => NotFound(error.asJson)
-              }
-            } yield resp
+            serviceRef.modify(_.deleteStation(uniqueName)) flatMap {
+              case error: DeleteStationError         => NotFound(error.asJson)
+              case result: CacheDeleteStationSuccess => Ok(result.asJson)
+            }
         }
 
       case GET -> Root / "user" / "stations" / name as role =>
-        for {
-          service <- serviceRef.get
-          resp    <- service.filterStations(name).flatMap {
-            case Right(stationEntities) => Ok(stationEntities.asJson)
-            case Left(message)          => NotFound(message.asJson)
-          }
-        } yield resp
+
+        serviceRef.modify(_.filterStations(name)) flatMap {
+          case error: FilterStationError    => NotFound(error.asJson)
+          case result: FilterStationSuccess => Ok(result.asJson)
+        }
     }
   }
 

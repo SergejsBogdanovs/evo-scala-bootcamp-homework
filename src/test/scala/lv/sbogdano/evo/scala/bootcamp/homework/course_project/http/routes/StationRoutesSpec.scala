@@ -417,17 +417,17 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     val authUserNotFoundJson: Json = AuthResponseError("Couldn't find user by provided cookies").asJson
     val authInvalidUserJson: Json = AuthResponseError("Invalid user").asJson
 
-    val deletedStationResponseJson: Json = DeleteStationSuccess(stationMock.uniqueName).asJson
+    val deletedStationResponseJson: Json = CacheDeleteStationSuccess(List.empty).asJson
     val getStationsResponseJson: Json = FilterStationSuccess(List(stationMock)).asJson
-    val updateStationResponseJson: Json = UpdateStationSuccess(updateStationMock).asJson
-    val createStationResponseJson: Json = CreateStationSuccess(stationMock).asJson
+    val updateStationResponseJson: Json = CacheUpdateStationSuccess(List(updateStationMock)).asJson
+    val createStationResponseJson: Json = CacheCreateStationSuccess(List(stationMock)).asJson
 
     val updateStationErrorJson: Json = UpdateStationError("Not found station to update").asJson
     val deleteStationErrorJson: Json = DeleteStationError("Not found station to delete").asJson
     val getStationErrorJson: Json = FilterStationError("Not found any station").asJson
 
     val router: IO[Kleisli[IO, Request[IO], Response[IO]]] = for {
-        ref    <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
+        ref    <- Ref.of[IO, StationService](StationService(JobsState(), null))
         router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
     } yield router
 
@@ -459,7 +459,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
 
     val loginUri = uri"/api/v1/login"
     val router = for {
-      ref <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage()))
+      ref <- Ref.of[IO, StationService](StationService(JobsState(), null))
       router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
       } yield router
 
@@ -489,7 +489,7 @@ class StationRoutesSpec extends AnyFlatSpec with Matchers {
     )
 
     for {
-      ref    <- Ref.of[IO, StationService](StationService(JobsState(), CacheStorage(stations = List(stationMock))))
+      ref    <- Ref.of[IO, StationService](StationService(JobsState(CacheStorage(null, List(stationMock))), null))
       router = StationRoutes.makeRouter(serviceRef = ref, queue = null, topic = null)
     } yield router
   }

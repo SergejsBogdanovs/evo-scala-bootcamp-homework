@@ -1,6 +1,5 @@
 package lv.sbogdano.evo.scala.bootcamp.homework.course_project.service
 
-import cats.effect.IO
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.repository._
@@ -15,18 +14,29 @@ import java.time.Instant
 
 class StationService(jobState: JobsState, storage: Storage) {
 
-  def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] =
-    storage.createStation(stationEntity)
+  def createStation(stationEntity: StationEntity): (StationService, RepositoryResponse) =
+    jobState.createStation(stationEntity) match {
+      case Left(error)     => (this, error)
+      case Right(newState) => (StationService(newState._1, storage), newState._2)
+    }
 
-  def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]] =
-    storage.updateStation(stationEntity)
+  def updateStation(stationEntity: StationEntity): (StationService, RepositoryResponse) =
+    jobState.updateStation(stationEntity) match {
+      case Left(error)     => (this, error)
+      case Right(newState) => (StationService(newState._1, storage), newState._2)
+    }
 
-  def filterStations(name: String): IO[Either[FilterStationError, FilterStationSuccess]] =
-    storage.filterStations(name)
+  def filterStations(name: String): (StationService, RepositoryResponse) =
+    jobState.filterStations(name) match {
+      case Left(error)  => (this, error)
+      case Right(state) => (this, state._2)
+    }
 
-  def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]] =
-    storage.deleteStation(uniqueName)
-
+  def deleteStation(uniqueName: String): (StationService, RepositoryResponse) =
+    jobState.deleteStation(uniqueName) match {
+      case Left(error)     => (this, error)
+      case Right(newState) => (StationService(newState._1, storage), newState._2)
+    }
 
   // JobsSchedule
 

@@ -6,13 +6,19 @@ sealed trait RepositoryResponse
 
 sealed trait RepositoryError extends Throwable with RepositoryResponse
 
-case class CreateStationSuccess(stationEntity: StationEntity) extends RepositoryResponse
+case class CacheCreateStationSuccess(stationEntities: List[StationEntity]) extends RepositoryResponse
 
-case class UpdateStationSuccess(stationEntity: StationEntity) extends RepositoryResponse
+case class DatabaseCreateStationSuccess(stationEntity: StationEntity) extends RepositoryResponse
+
+case class CacheUpdateStationSuccess(stationEntities: List[StationEntity]) extends RepositoryResponse
+
+case class DatabaseUpdateStationSuccess(stationEntity: StationEntity) extends RepositoryResponse
 
 case class FilterStationSuccess(stationEntities: List[StationEntity]) extends RepositoryResponse
 
-case class DeleteStationSuccess(uniqueName: String) extends RepositoryResponse
+case class CacheDeleteStationSuccess(stationEntities: List[StationEntity]) extends RepositoryResponse
+
+case class DatabaseDeleteStationSuccess(uniqueName: String) extends RepositoryResponse
 
 
 case class CreateStationError(errorMessage: String) extends RepositoryError

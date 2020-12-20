@@ -14,24 +14,24 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.repository.Storage
 
 class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
 
-  override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]] =
+  override def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, DatabaseCreateStationSuccess]] =
     StationQuery.insertStation(stationEntity).run.transact(transactor).attempt.map {
       case Left(_) => CreateStationError("Error during insertion into Database").asLeft
 
       case Right(value) =>
         if (value == 1)
-          CreateStationSuccess(stationEntity).asRight
+          DatabaseCreateStationSuccess(stationEntity).asRight
         else
           CreateStationError("Error during insertion into Database").asLeft
     }
 
-  override def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]] =
+  override def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, DatabaseUpdateStationSuccess]] =
     StationQuery.updateStation(stationEntity).run.transact(transactor).attempt.map {
       case Left(_) => UpdateStationError("Error during update").asLeft
 
       case Right(value) =>
         if (value == 1)
-          UpdateStationSuccess(stationEntity).asRight
+          DatabaseUpdateStationSuccess(stationEntity).asRight
         else
           UpdateStationError("Error during update").asLeft
     }
@@ -42,13 +42,13 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
       case Right(stations) => FilterStationSuccess(stations).asRight
     }
 
-  override def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]] =
+  override def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DatabaseDeleteStationSuccess]] =
     StationQuery.deleteStation(uniqueName).run.transact(transactor).attempt.map {
       case Left(_) => DeleteStationError("Error during delete").asLeft
 
       case Right(value) =>
         if (value == 1)
-          DeleteStationSuccess(uniqueName).asRight
+          DatabaseDeleteStationSuccess(uniqueName).asRight
         else
           DeleteStationError("Error during delete").asLeft
     }

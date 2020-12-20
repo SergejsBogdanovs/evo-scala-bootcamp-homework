@@ -10,13 +10,13 @@ import lv.sbogdano.evo.scala.bootcamp.homework.course_project.domain.station.Sta
 trait Storage {
 
 
-  def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, CreateStationSuccess]]
+  def createStation(stationEntity: StationEntity): IO[Either[CreateStationError, DatabaseCreateStationSuccess]]
 
-  def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, UpdateStationSuccess]]
+  def updateStation(stationEntity: StationEntity): IO[Either[UpdateStationError, DatabaseUpdateStationSuccess]]
 
   def filterStations(name: String): IO[Either[FilterStationError, FilterStationSuccess]]
 
-  def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DeleteStationSuccess]]
+  def deleteStation(uniqueName: String): IO[Either[DeleteStationError, DatabaseDeleteStationSuccess]]
 
 
 
