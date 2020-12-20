@@ -53,19 +53,18 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
           DeleteStationError("Error during delete").asLeft
     }
 
-  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] = {
+  override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
     StationQuery.finsJobsByUser(userLogin).transact(transactor).attempt.map {
       case Left(_)         => FindJobsError(s"Can not find any jobs").asLeft
       case Right(userJobs) => if (userJobs.isEmpty) FindJobsError(s"Can not find any jobs").asLeft else UserJobSchedule(userJobs.sorted).asRight
     }.unsafeRunSync()
-  }
 
   def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] = {
-    val t: List[(Job, StationEntity)] = jobSchedule.map(job => (job, job.station))
+    val jobsWithStations: List[(Job, StationEntity)] = jobSchedule.map(job => (job, job.station))
     val jobs: List[JobEntity] =
-      t.map { case (job, _) => job }.map(job => JobEntity(job.id, job.userLogin, job.status.toString, job.priority.toString, job.station.uniqueName))
+      jobsWithStations.map { case (job, _) => job }.map(job => JobEntity(job.id, job.userLogin, job.status.toString, job.priority.toString, job.station.uniqueName))
 
-    val stations: List[StationEntity] = t.map { case (_, stationEntity) => stationEntity }
+    val stations: List[StationEntity] = jobsWithStations.map { case (_, stationEntity) => stationEntity }
 
     StationQuery.insertManyStations(stations).transact(transactor).attempt.map {
             case Left(error)  => UpdateJobError(s"Error during update: $error").asLeft
