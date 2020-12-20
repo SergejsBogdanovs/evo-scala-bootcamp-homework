@@ -76,14 +76,4 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
               }.unsafeRunSync()
     }.unsafeRunSync()
   }
-
-  override def findJobsByUserAndStatus(userLogin: UserLogin, status: Status): Either[OutputActionError, UserJobSchedule] = ???
-
-  override def updateJobPriority(userLogin: UserLogin, jobId: Int, priority: Priority): Either[OutputActionError, UserJobSchedule] = ???
-
-  override def updateJobStatus(userLogin: UserLogin, jobId: Int, status: Status): Either[OutputActionError, UserJobSchedule] = ???
-
-  override def addJobToSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = ???
-
-  override def deleteJobFromSchedule(job: Job): Either[OutputActionError, UserJobSchedule] = ???
 }
