@@ -53,12 +53,14 @@ class DatabaseStorage(transactor: Transactor[IO]) extends Storage {
           DeleteStationError("Error during delete").asLeft
     }
 
+  // Very very bad code lives here
   override def findJobsByUser(userLogin: UserLogin): Either[OutputActionError, UserJobSchedule] =
     StationQuery.finsJobsByUser(userLogin).transact(transactor).attempt.map {
       case Left(_)         => FindJobsError(s"Can not find any jobs").asLeft
       case Right(userJobs) => if (userJobs.isEmpty) FindJobsError(s"Can not find any jobs").asLeft else UserJobSchedule(userJobs.sorted).asRight
     }.unsafeRunSync()
 
+  // Very very bad code lives here
   def updateDatabaseWithCache(jobSchedule: JobSchedule): Either[UpdateJobError, UpdateJobResult] = {
     val jobsWithStations: List[(Job, StationEntity)] = jobSchedule.map(job => (job, job.station))
     val jobs: List[JobEntity] =
