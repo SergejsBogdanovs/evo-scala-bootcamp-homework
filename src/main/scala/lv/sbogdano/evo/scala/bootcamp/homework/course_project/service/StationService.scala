@@ -41,21 +41,21 @@ class StationService(jobState: JobsState, storage: Storage) {
   // JobsSchedule
 
   def process(msg: InputMessage): (StationService, Seq[OutputMessage]) = {
-    val (state, outputMessages) = jobState.process(msg)
+    val (newState, outputMessages) = jobState.process(msg)
     outputMessages match {
       case h :: Nil => h.outputAction match {
 
-        case WelcomeUser(_) | UserJobSchedule(_) | UpdateJobResult(_) => (StationService(state, storage), outputMessages)
+        case WelcomeUser(_) | UserJobSchedule(_) | UpdateJobResult(_) => (StationService(newState, storage), outputMessages)
 
         case DisconnectResult(data) =>
           updateDatabaseWithCache(data) match {
             case Left(error) =>
-              val seq = Seq(OutputMessage(msg.userLogin, error))
-              (StationService(state, storage), seq)
+              val outputMessages = Seq(OutputMessage(msg.userLogin, error))
+              (StationService(newState, storage), outputMessages)
 
             case Right(value) =>
-              val seq = Seq(OutputMessage(msg.userLogin, value))
-              (StationService(state, storage), seq)
+              val outputMessages = Seq(OutputMessage(msg.userLogin, value))
+              (StationService(newState, storage), outputMessages)
           }
 
 
@@ -65,8 +65,8 @@ class StationService(jobState: JobsState, storage: Storage) {
 
             getJobsFromDatabase(msg.userLogin) match {
               case Left(error) =>
-                val seq = Seq(OutputMessage(msg.userLogin, error))
-                (StationService(state, storage), seq)
+                val outputMessages = Seq(OutputMessage(msg.userLogin, error))
+                (StationService(newState, storage), outputMessages)
 
               case Right(userJobSchedule) =>
                 val (updatedState, outputMessages) = jobState.updateState(msg.userLogin, userJobSchedule.jobSchedule, userJobSchedule)
@@ -74,11 +74,11 @@ class StationService(jobState: JobsState, storage: Storage) {
             }
 
           case UpdateJobError(_) | AddJobError(_) | DeleteJobError(_) | InvalidInputError(_) | SystemError(_) =>
-            (StationService(state, storage), outputMessages)
+            (StationService(newState, storage), outputMessages)
         }
       }
 
-      case Nil => (StationService(state, storage), Seq(OutputMessage(msg.userLogin, SystemError("System error"))))
+      case Nil => (StationService(newState, storage), Seq(OutputMessage(msg.userLogin, SystemError("System error"))))
     }
   }
 

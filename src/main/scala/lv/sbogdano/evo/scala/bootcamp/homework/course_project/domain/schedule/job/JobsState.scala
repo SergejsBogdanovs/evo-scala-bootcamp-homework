@@ -18,21 +18,21 @@ case class JobsState(cacheStorage: CacheStorage) {
 
   def createStation(stationEntity: StationEntity): Either[CreateStationError, (JobsState, CacheCreateStationSuccess)] = {
     cacheStorage.createStation(stationEntity) match {
-      case Left(error)  => error.asLeft
+      case Left(error)    => error.asLeft
       case Right(success) => (JobsState(CacheStorage(stations = success.stationEntities)), success).asRight
     }
   }
 
   def updateStation(stationEntity: StationEntity): Either[UpdateStationError, (JobsState, CacheUpdateStationSuccess)] = {
     cacheStorage.updateStation(stationEntity) match {
-      case Left(error)  => error.asLeft
+      case Left(error)    => error.asLeft
       case Right(success) => (JobsState(CacheStorage(stations = success.stationEntities)), success).asRight
     }
   }
 
   def deleteStation(uniqueName: String): Either[DeleteStationError, (JobsState, CacheDeleteStationSuccess)] = {
     cacheStorage.deleteStation(uniqueName) match {
-      case Left(error)  => error.asLeft
+      case Left(error)    => error.asLeft
       case Right(success) => (JobsState(CacheStorage(stations = success.stationEntities)), success).asRight
     }
   }
